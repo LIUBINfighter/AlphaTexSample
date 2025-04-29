@@ -20,6 +20,7 @@
     <script src="https://kit.fontawesome.com/b43f0e512e.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/handlebars@4.5.3/dist/handlebars.min.js"
         integrity="sha256-GwjGuGudzIwyNtTEBZuBYYPDvNlSMSKEDwECr6x6H9c=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script> <!-- 引入 Lucide 图标库 -->
 
     <link rel="stylesheet" href="control.css" />
     <link rel="stylesheet" href="sidebar.css" />
@@ -28,7 +29,7 @@
 <body>
     <div class="app-container">
         <div class="app-sidebar">
-            <button class="app-button">新按钮</button>
+            <button class="app-button">AlphaTex编辑器</button>
             <div class="score-list">
                 <h5>曲谱列表</h5>
                 <ul class="score-items"></ul>
@@ -58,18 +59,19 @@
             <div class="at-player">
                 
                 <div class="at-player-left">
+                    <!-- Stop 按钮 -->
                     <a href="#" class="at-stop disabled" data-toggle="tooltip" data-placement="top" title="Stop">
-                        <i class="fas fa-step-backward"></i>
+                        <i class="lucide lucide-square"></i> <!-- 替换为 Lucide 的停止图标 -->
                     </a>
 
-                    <a
-                        href="#"
+                    <!-- Play/Pause 按钮 -->
+                    <a href="#"
                         class="at-play-pause disabled"
                         data-toggle="tooltip"
                         data-placement="top"
                         title="Play/Pause"
                     >
-                        <i class="fas fa-play"></i>
+                        <i class="lucide lucide-play"></i> <!-- 替换为 Lucide 的播放图标 -->
                     </a>
 
                     <div class="btn-group dropup">
@@ -117,20 +119,26 @@
                 </div>
 
                 <div class="at-player-right">
+                    <!-- Count-In 按钮 -->
                     <a href="#" class="at-count-in disabled" data-toggle="tooltip" data-placement="top" title="Count-In">
-                        <i class="fas fa-hourglass-half"></i>
+                        <i class="lucide lucide-hourglass"></i> <!-- 替换为 Lucide 的计时图标 -->
                     </a>
+                    <!-- Metronome 按钮 -->
                     <a href="#" class="at-metronome disabled" data-toggle="tooltip" data-placement="top" title="Metronome">
-                        <i class="fas fa-edit"></i>
+                        <i class="lucide lucide-music"></i> <!-- 替换为 Lucide 的节拍器图标 -->
                     </a>
+                    <!-- Loop 按钮 -->
                     <a href="#" class="at-loop disabled" data-toggle="tooltip" data-placement="top" title="Loop">
-                        <i class="fas fa-retweet"></i>
+                        <i class="lucide lucide-refresh-cw"></i> <!-- 替换为 Lucide 的循环图标 -->
                     </a>
+                    <!-- Print 按钮 -->
                     <a href="#" class="at-print" data-toggle="tooltip" data-placement="top" title="Print">
-                        <i class="fas fa-print"></i>
+                        <i class="lucide lucide-printer"></i> <!-- 替换为 Lucide 的打印图标 -->
                     </a>
+
+                    <!-- Download 按钮 -->
                     <a href="#" class="at-download" data-toggle="tooltip" data-placement="top" title="Download">
-                        <i class="fas fa-download"></i>
+                        <i class="lucide lucide-download"></i> <!-- 替换为 Lucide 的下载图标 -->
                     </a>                
 
                     <div class="btn-group dropup">
@@ -200,5 +208,12 @@
     </template>
     
     <script type="module" src="control.js"></script>
+    <script type="module" src="navigation.js"></script>
 </body>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        lucide.createIcons(); // 初始化 Lucide 图标
+    });
+</script>
+
 </html>

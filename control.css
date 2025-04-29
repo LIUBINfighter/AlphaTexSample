@@ -67,10 +67,8 @@ body {
     background: #436d9d;
     color: #fff;
     display: flex;
-    align-items: center;
+    /* align-items: center; */
     justify-content: space-between;
-    /* position:sticky; 
-    bottom:0; */
 }
 
 .at-sidebar {
