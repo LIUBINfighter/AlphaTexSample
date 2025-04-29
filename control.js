@@ -57,6 +57,47 @@ function createTrackItem(track) {
 function setupControl(selector) {
     const el = document.querySelector(selector);
     const control = el.closest('.at-wrap');
+    
+    // 初始化曲谱列表
+    const scoreList = document.querySelector('.app-sidebar .score-items');
+    if (!scoreList) {
+        console.error('找不到曲谱列表元素');
+        return;
+    }
+    
+    function loadScoreList() {
+        try {
+            // 预定义的曲谱文件列表
+            const scores = [
+                'ギターと孤独と蒼い惑星.gp',
+                'ギターと孤独と蒼い惑星.gp5'
+            ];
+            
+            console.log('加载曲谱列表:', scores);
+            scoreList.innerHTML = '';
+            scores.forEach(file => {
+                console.log('添加曲谱:', file);
+                const li = document.createElement('li');
+                li.textContent = file;
+                li.onclick = async () => {
+                    // 移除之前选中的项
+                    document.querySelectorAll('.score-items li').forEach(item => {
+                        item.classList.remove('active');
+                    });
+                    li.classList.add('active');
+                    
+                    // 加载曲谱
+                    const response = await fetch(`scores/${file}`);
+                    const arrayBuffer = await response.arrayBuffer();
+                    at.load(arrayBuffer, [0]);
+                };
+                scoreList.appendChild(li);
+            });
+        } catch (error) {
+            console.error('加载曲谱列表失败:', error);
+        }
+    }
+    loadScoreList();
 
     const viewPort = control.querySelector('.at-viewport');
     const at = new alphaTab.AlphaTabApi(el, {
@@ -309,4 +350,23 @@ function updateProgress(el, value) {
     el.querySelector('.progress-value-number').innerText = value | 0;
 }
 
-setupControl('#alphaTab');
+// 添加拖放支持
+document.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'copy';
+});
+
+document.addEventListener('drop', (e) => {
+    e.preventDefault();
+    const files = e.dataTransfer.files;
+    if (files.length === 1 && (files[0].name.endsWith('.gp') || files[0].name.endsWith('.gp5'))) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            at.load(event.target.result, [0]);
+        };
+        reader.readAsArrayBuffer(files[0]);
+    }
+});
+
+// 初始化alphaTab控件
+const at = setupControl('#alphaTab');
