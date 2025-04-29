@@ -237,11 +237,13 @@ function setupControl(selector) {
     at.playerStateChanged.on(function (args) {
         const icon = playPauseButton.querySelector('i');
         if (args.state == 0) {
-            icon.classList.remove('fa-pause');
-            icon.classList.add('fa-play');
+            // 使用data-lucide属性替换图标
+            icon.setAttribute('data-lucide', 'play');
+            lucide.replace(); // 刷新图标
         } else {
-            icon.classList.remove('fa-play');
-            icon.classList.add('fa-pause');
+            // 使用data-lucide属性替换图标
+            icon.setAttribute('data-lucide', 'pause');
+            lucide.replace(); // 刷新图标
         }
     });
 

@@ -5,28 +5,21 @@
     <meta charset="utf-8" />
     <title>AlphaTab Control Demo</title>
 
-    <!-- 关键资源预加载 -->
-    <link rel="preload" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" as="style" />
-    <link rel="preload" href="https://kit.fontawesome.com/b43f0e512e.js" as="script" />
+    <!-- 关键资源预加载，移除有问题的预加载 -->
     <link rel="preload" href="control.css" as="style" />
     
     <!-- 异步加载CSS -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
-        integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous" media="print" onload="this.media='all'" />
-    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"
-        integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
-        integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
-        crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
-        integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
-        crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" crossorigin="anonymous" media="print" onload="this.media='all'" />
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" crossorigin="anonymous"></script>
 
     <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,500,700&display=swap" rel="stylesheet" />
-    <script src="https://kit.fontawesome.com/b43f0e512e.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/handlebars@4.5.3/dist/handlebars.min.js"
-        integrity="sha256-GwjGuGudzIwyNtTEBZuBYYPDvNlSMSKEDwECr6x6H9c=" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/lucide@0.259.0/dist/lucide.min.js"></script> <!-- 引入 Lucide -->
+    <!-- 移除 Font Awesome 脚本引用 -->
+    <script src="https://cdn.jsdelivr.net/npm/handlebars@4.5.3/dist/handlebars.min.js" crossorigin="anonymous"></script>
+
+    <!-- 直接加载 Lucide 图标库 -->
+    <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
 
     <link rel="stylesheet" href="control.css" />
     <link rel="stylesheet" href="sidebar.css" />
@@ -85,7 +78,7 @@
                             aria-haspopup="true"
                             aria-expanded="false"
                         >
-                            <i class="fas fa-search"></i>
+                            <i data-lucide="gauge"></i>
                             <span class="at-speed-label">1x</span>
                         </button>
                         <div class="dropdown-menu dropdown-menu at-speed-options">
@@ -146,7 +139,7 @@
                             aria-haspopup="true"
                             aria-expanded="false"
                         >
-                            <i class="fas fa-search"></i>
+                            <i data-lucide="zoom-in"></i>
                             <span class="at-zoom-label">100%</span>
                         </button>
                         <div class="dropdown-menu dropdown-menu-right at-zoom-options">
@@ -174,13 +167,13 @@
                         </button>
                         <div class="dropdown-menu dropdown-menu-right at-layout-options">
                             <a class="dropdown-item" href="#" data-layout="horizontal-screen">
-                                <i class="far fa-caret-square-right"></i> Horizontal Layout (Off-Screen)
+                                <i data-lucide="arrow-right"></i> Horizontal Layout (Off-Screen)
                             </a>
                             <a class="dropdown-item" href="#" data-layout="horizontal-bar">
-                                <i class="fas fa-caret-square-right"></i> Horizontal Layout (Bar Wise)
+                                <i data-lucide="align-justify"></i> Horizontal Layout (Bar Wise)
                             </a>
                             <a class="dropdown-item" href="#" data-layout="page">
-                                <i class="fas fa-caret-square-down"></i> Vertical Layout
+                                <i data-lucide="align-vertical-justify-center"></i> Vertical Layout
                             </a>
                         </div>
                     </div>
@@ -192,24 +185,27 @@
     <template id="at-track-template">
         <div class="at-track">
             <div class="at-track-icon">
-                <i class="fas fa-guitar"></i>
+                <i data-lucide="guitar"></i>
             </div>
             <span class="at-track-name">{{name}}</span>
             <div class="at-track-controls">
                 <button type="button" class="btn btn-sm btn-outline-danger at-track-mute">Mute</button>
                 <button type="button" class="btn btn-sm btn-outline-success at-track-solo">Solo</button>
-                <i class="fas fa-volume-up"></i>
+                <i data-lucide="volume-2"></i>
                 <input type="range" min="0" max="16" value="8" class="at-track-volume" />
             </div>
         </div>
     </template>
     
-    <script type="module" src="control.js"></script>
     <script>
-        window.addEventListener('DOMContentLoaded', () => {
-            lucide.replace(); // 初始化 Lucide 图标
+        // 在页面加载完成后初始化所有 Lucide 图标
+        document.addEventListener('DOMContentLoaded', () => {
+            if (window.lucide) {
+                lucide.createIcons();
+            }
         });
     </script>
+    <script type="module" src="control.js"></script>
 </body>
 
 </html>
