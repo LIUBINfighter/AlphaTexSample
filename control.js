@@ -176,6 +176,14 @@ function setupControl(selector) {
     });
     at.renderFinished.on(function () {
         control.classList.remove('loading');
+        control.style.visibility = 'visible';
+    });
+
+    // 添加错误处理
+    at.error.on(function(e) {
+        console.error('AlphaTab error:', e);
+        control.style.visibility = 'visible';
+        control.classList.remove('loading');
     });
 
     at.scoreLoaded.on(function (score) {
