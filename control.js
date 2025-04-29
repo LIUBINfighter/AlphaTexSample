@@ -65,11 +65,12 @@ function setupControl(selector) {
         return;
     }
     
+    console.log('开始初始化曲谱列表功能');
     function loadScoreList() {
         try {
             // 预定义的曲谱文件列表
             const scores = [
-                'ギターと孤独と蒼い惑星.gp',
+                // 'ギターと孤独と蒼い惑星.gp',
                 'ギターと孤独と蒼い惑星.gp5'
             ];
             
@@ -350,23 +351,11 @@ function updateProgress(el, value) {
     el.querySelector('.progress-value-number').innerText = value | 0;
 }
 
-// 添加拖放支持
-document.addEventListener('dragover', (e) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'copy';
-});
-
-document.addEventListener('drop', (e) => {
-    e.preventDefault();
-    const files = e.dataTransfer.files;
-    if (files.length === 1 && (files[0].name.endsWith('.gp') || files[0].name.endsWith('.gp5'))) {
-        const reader = new FileReader();
-        reader.onload = (event) => {
-            at.load(event.target.result, [0]);
-        };
-        reader.readAsArrayBuffer(files[0]);
-    }
-});
-
 // 初始化alphaTab控件
-const at = setupControl('#alphaTab');
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('执行setupControl入口');
+    const at = setupControl('#alphaTab');
+});
+
+// 导出setupControl函数
+export { setupControl };
