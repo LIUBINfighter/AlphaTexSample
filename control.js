@@ -70,8 +70,9 @@ function setupControl(selector) {
         try {
             // 预定义的曲谱文件列表
             const scores = [
-                // 'ギターと孤独と蒼い惑星.gp',
-                'ギターと孤独と蒼い惑星.gp5'
+                'ギターと孤独と蒼い惑星.gp',
+                'ギターと孤独と蒼い惑星.gp5',
+                'Lycoris Recoil 花の塔.gp'
             ];
             
             console.log('加载曲谱列表:', scores);
@@ -87,10 +88,23 @@ function setupControl(selector) {
                     });
                     li.classList.add('active');
                     
-                    // 加载曲谱
-                    const response = await fetch(`scores/${file}`);
-                    const arrayBuffer = await response.arrayBuffer();
-                    at.load(arrayBuffer, [0]);
+                    try {
+                        console.log('开始加载曲谱:', file);
+                        // 检查文件是否存在
+                        const response = await fetch(`scores/${file}`);
+                        if (!response.ok) {
+                            throw new Error(`文件加载失败: ${response.status}`);
+                        }
+                        const arrayBuffer = await response.arrayBuffer();
+                        console.log('曲谱文件已加载，开始解析');
+                        at.load(arrayBuffer, [0]).catch(e => {
+                            console.error('曲谱解析失败:', e);
+                            alert('曲谱格式不支持或已损坏');
+                        });
+                    } catch (error) {
+                        // console.error('加载曲谱出错:', error);
+                        // alert(`无法加载曲谱: ${error.message}`);
+                    }
                 };
                 scoreList.appendChild(li);
             });
