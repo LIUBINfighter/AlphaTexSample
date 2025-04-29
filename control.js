@@ -91,7 +91,7 @@ function setupControl(selector) {
                     try {
                         console.log('开始加载曲谱:', file);
                         // 检查文件是否存在
-                        const response = await fetch(`scores/${file}`);
+                        const response = await fetch(`assets/scores/${file}`);
                         if (!response.ok) {
                             throw new Error(`文件加载失败: ${response.status}`);
                         }
