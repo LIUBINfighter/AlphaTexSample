@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="utf-8" />
+    <title>AlphaTex 文档</title>
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+        integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous" />
+    <link rel="stylesheet" href="src/styles/control.css" />
+    <link rel="stylesheet" href="src/styles/sidebar.css" />
+    <link rel="stylesheet" href="src/styles/editor.css" />
+</head>
+
+<body>
+    <div class="app-container">
+        <div class="app-sidebar">
+            <a href="index.html" class="app-button">返回首页</a>
+            <a href="editor.html" class="app-button">返回编辑器</a>
+        </div>
+        <div class="app-content">
+            <div class="content-container">
+                <h1>AlphaTex 基本语法结构</h1>
+                <p>AlphaTex 文档通常由两部分组成：元数据部分和乐谱内容部分。</p>
+
+                <h2>1. 元数据部分</h2>
+                <p>元数据以反斜杠 <code>\</code> 开头，用于定义乐谱的全局属性：</p>
+                <pre><code>\title "歌曲标题"  
+\subtitle "副标题"  
+\artist "艺术家"  
+\album "专辑"  
+\words "作词"  
+\music "作曲"  
+\copyright "版权信息"  
+\tempo 120  
+\time 4/4  
+\instrument 25
+</code></pre>
+
+                <h2>2. 乐谱内容部分</h2>
+                <p>乐谱内容以点号 <code>.</code> 开始，后面跟着音符、小节线等：</p>
+                <pre><code>.  
+4.4.4 0.2.4 1.3.4 | 5.3.8 5.3.8 5.3.8 5.3.8 r.2
+</code></pre>
+
+                <h2>详细语法参考</h2>
+
+                <h3>元数据命令</h3>
+                <p>从代码中可以看到，AlphaTex 支持多种元数据命令：</p>
+                <ul>
+                    <li><strong>基本信息</strong>
+                        <ul>
+                            <li><code>\title</code> - 设置乐谱标题</li>
+                            <li><code>\subtitle</code> - 设置副标题</li>
+                            <li><code>\artist</code> - 设置艺术家</li>
+                            <li><code>\album</code> - 设置专辑</li>
+                            <li><code>\words</code> - 设置作词</li>
+                            <li><code>\music</code> - 设置作曲</li>
+                            <li><code>\copyright</code> - 设置版权信息</li>
+                            <li><code>\tempo</code> - 设置速度（BPM）</li>
+                        </ul>
+                    </li>
+                    <li><strong>乐谱设置</strong>
+                        <ul>
+                            <li><code>\time</code> - 设置拍号</li>
+                            <li><code>\instrument</code> - 设置乐器（MIDI程序号）</li>
+                            <li><code>\capo</code> - 设置变调夹位置</li>
+                            <li><code>\tuning</code> - 设置弦乐器调音</li>
+                        </ul>
+                    </li>
+                    <li><strong>轨道和谱表设置</strong>
+                        <ul>
+                            <li><code>\track</code> - 定义新轨道</li>
+                            <li><code>\staff</code> - 定义谱表属性</li>
+                        </ul>
+                    </li>
+                </ul>
+
+                <h3>音符表示法</h3>
+                <p>AlphaTex 中的音符表示为： <code>弦号.品位.时值</code></p>
+                <pre><code>0.5.2 // 第0弦，第5品，二分音符
+1.5.4 // 第1弦，第5品，四分音符
+3.4.8 // 第3弦，第4品，八分音符
+</code></pre>
+
+                <h3>休止符</h3>
+                <p>休止符表示为 <code>r.时值</code> ，例如：</p>
+                <pre><code>r.4 // 四分休止符
+r.2 // 二分休止符
+</code></pre>
+
+                <h3>小节线和重复</h3>
+                <pre><code>|   // 小节线
+||  // 双小节线
+|*  // 重复开始
+*|  // 重复结束
+</code></pre>
+
+                <h3>特殊效果</h3>
+                <ul>
+                    <li><strong>弯音和颤音</strong>
+                        <ul>
+                            <li><code>{b}</code> - 弯音</li>
+                            <li><code>{v}</code> - 颤音</li>
+                            <li><code>{tr}</code> - 颤音琶音</li>
+                        </ul>
+                    </li>
+                    <li><strong>滑音和连音</strong>
+                        <ul>
+                            <li><code>{s}</code> - 滑音</li>
+                            <li><code>{h}</code> - 锤击</li>
+                            <li><code>{p}</code> - 勾弦</li>
+                        </ul>
+                    </li>
+                    <li><strong>其他效果</strong>
+                        <ul>
+                            <li><code>{tp}</code> - 颤音拨片</li>
+                            <li><code>{tu}</code> - 调音</li>
+                            <li><code>{dd}</code> - 死音</li>
+                            <li><code>{su}</code> - 向上扫弦</li>
+                            <li><code>{sd}</code> - 向下扫弦</li>
+                        </ul>
+                    </li>
+                </ul>
+
+                <h3>和弦和指法</h3>
+                <pre><code>\chord "和弦名" 弦1 弦2 弦3 弦4 弦5 弦6
+</code></pre>
+
+                <h3>歌词</h3>
+                <pre><code>\lyrics "歌词内容"
+</code></pre>
+
+                <h3>小节标记和跳转</h3>
+                <pre><code>\section "段落名称"  
+\jump "跳转标记"
+</code></pre>
+
+                <h2>实际示例</h2>
+                <p>以下是一个完整的 AlphaTex 示例，展示了多种语法元素：</p>
+                <pre><code>\title "示例乐谱"
+\tempo 120
+\time 4/4
+
+.
+4.4.4 0.2.4 1.3.4 | 5.3.8 5.3.8 5.3.8 5.3.8 r.2
+</code></pre>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

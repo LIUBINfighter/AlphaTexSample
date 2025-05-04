@@ -1,29 +1,27 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 
 <head>
     <meta charset="utf-8" />
-    <title>AlphaTab Editor</title>
+    <title>AlphaTex编辑器</title>
 
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
         integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous" />
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"
         integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/popper.min.js"
         integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
         crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
-        integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
+        integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7Yd1iqfktj0Uod8GCExl3Og8ifwB6"
         crossorigin="anonymous"></script>
 
     <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,500,700&display=swap" rel="stylesheet" />
-    <script src="https://kit.fontawesome.com/b43f0e512e.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/handlebars@4.5.3/dist/handlebars.min.js"
-        integrity="sha256-GwjGuGudzIwyNtTEBZuBYYPDvNlSMSKEDwECr6x6H9c=" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
 
     <link rel="stylesheet" href="src/styles/control.css" />
     <link rel="stylesheet" href="src/styles/sidebar.css" />
+    <link rel="stylesheet" href="src/styles/editor.css" />
 </head>
 
 <body>
@@ -31,19 +29,42 @@
         <div class="app-sidebar">
             <a href="index.html" class="app-button">返回播放器</a>
             <div class="score-list">
-                <h5>曲谱列表</h5>
+                <h5>编辑器曲谱列表</h5>
                 <ul class="score-items"></ul>
             </div>
         </div>
         <div class="app-content">
-            <!-- 编辑器内容将在这里添加 -->
-            <h1>编辑器页面</h1>
+            <div class="editor-container">
+                <div class="editor-panel">
+                    <div class="editor-toolbar">
+                        <button class="btn btn-sm btn-outline-primary" id="btn-new">新建</button>
+                        <button class="btn btn-sm btn-outline-success" id="btn-save">保存</button>
+                        <button class="btn btn-sm btn-outline-info" id="btn-examples">示例</button>
+                        <a href="docs.html" class="btn btn-sm btn-outline-secondary" id="btn-help">帮助</a>
+                    </div>
+                    <div class="error-container"></div>
+                    <textarea id="alphatex-editor" class="alphatex-editor"></textarea>
+                </div>
+                <div class="preview-panel">
+                    <div id="alphatex-preview"></div>
+                    <div class="loading-indicator">
+                        <div class="spinner-border" role="status">
+                            <span class="sr-only">加载中...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <script type="module" src="script/navigation.js"></script>
+    <script type="module" src="src/script/editor.js"></script>
+    <script type="module" src="src/script/editor-navigation.js"></script>
     <script>
-        lucide.createIcons();
+        document.addEventListener('DOMContentLoaded', () => {
+            if (window.lucide) {
+                lucide.createIcons();
+            }
+        });
     </script>
 </body>
 
