@@ -92,7 +92,8 @@ function setupControl(selector) {
             const scores = [
                 'ギターと孤独と蒼い惑星.gp',
                 'ギターと孤独と蒼い惑星.gp5',
-                'Lycoris Recoil 花の塔.gp'
+                'Lycoris Recoil 花の塔.gp',
+                '吉他与孤独与蓝色星球.gpx' // 添加新的 gpx 文件
             ];
             
             console.log('加载曲谱列表:', scores);
