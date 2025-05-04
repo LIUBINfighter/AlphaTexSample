@@ -186,28 +186,7 @@ function initAlphaTexEditor() {
     });
     
     document.getElementById('btn-help').addEventListener('click', () => {
-        const helpText = `AlphaTex 基本语法:
-
-\\title "标题"       - 设置标题
-\\artist "艺术家"    - 设置艺术家
-\\tempo 120         - 设置曲速
-\\time 4/4         - 设置拍号
-
-.                  - 开始新小节
-|                  - 小节线
-
-音符格式: 品.弦.时值
-例如: 3.4.8        - 第4弦3品，八分音符
-
-休止符:
-r.4              - 四分休止符
-
-和弦:
-(0.6 2.5 2.4)    - 多个音符组成的和弦
-
-更多语法请参考文档!`;
-
-        alert(helpText);
+        window.location.href = 'docs.html'; // 直接跳转到 docs.html
     });
     
     // 显示错误信息的辅助函数
