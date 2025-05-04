@@ -119,7 +119,7 @@ function setupControl(selector) {
     });
 
     // 添加调试输出
-    console.log('AlphaTab初始化完成，滚动模式:', at.settings.player.scrollMode);
+    // console.log('AlphaTab初始化完成，滚动模式:', at.settings.player.scrollMode);
 
     at.error.on(function(e) {
         console.error('alphaTab error', e);
