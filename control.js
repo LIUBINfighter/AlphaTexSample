@@ -142,9 +142,15 @@ function setupControl(selector) {
             enablePlayer: true,
             soundFont: 'https://cdn.jsdelivr.net/npm/@coderline/alphatab@alpha/dist/soundfont/sonivox.sf2',
             scrollElement: viewPort,
-            scrollOffsetX: -10
+            scrollOffsetX: -10,
+            scrollMode: alphaTab.ScrollMode.Continuous, // 明确设置滚动模式
+            scrollSpeed: 300 // 控制滚动速度
         }
     });
+
+    // 添加调试输出
+    console.log('AlphaTab初始化完成，滚动模式:', at.settings.player.scrollMode);
+
     at.error.on(function(e) {
         console.error('alphaTab error', e);
     });
@@ -254,6 +260,23 @@ function setupControl(selector) {
         timeSliderValue.style.width = ((args.currentTime / args.endTime) * 100).toFixed(2) + '%';
     });
 
+    // 添加调试代码监控滚动行为
+    at.playerPositionChanged.on(function (args) {
+        console.log('播放位置:', args.currentTime.toFixed(2), 
+                    '当前小节索引:', args.beat ? args.beat.index : 'unknown',
+                    '自动滚动模式:', at.settings.player.scrollMode);
+    });
+
+    // 添加调试代码监控视图对象
+    console.log('滚动容器:', viewPort);
+    console.log('滚动设置:', {
+        scrollMode: at.settings.player.scrollMode,
+        scrollSpeed: at.settings.player.scrollSpeed,
+        scrollOffsetX: at.settings.player.scrollOffsetX,
+        scrollOffsetY: at.settings.player.scrollOffsetY,
+        layoutMode: at.settings.display.layoutMode
+    });
+
     const playPauseButton = control.querySelector('.at-play-pause');
     at.playerReady.on(function () {
         control.querySelectorAll('.at-player .disabled').forEach(function (c) {
@@ -263,14 +286,23 @@ function setupControl(selector) {
 
     at.playerStateChanged.on(function (args) {
         const icon = playPauseButton.querySelector('i');
+        console.log('播放状态改变:', args.state, '图标元素:', icon);
+        
+        if (!icon) {
+            console.error('播放图标元素不存在，这会影响滚动功能');
+            return; // 防止在null上调用方法
+        }
+        
         if (args.state == 0) {
             // 使用data-lucide属性替换图标
             icon.setAttribute('data-lucide', 'play');
             lucide.replace(); // 刷新图标
+            console.log('播放状态: 停止');
         } else {
             // 使用data-lucide属性替换图标
             icon.setAttribute('data-lucide', 'pause');
             lucide.replace(); // 刷新图标
+            console.log('播放状态: 播放');
         }
     });
 
@@ -358,18 +390,23 @@ function setupControl(selector) {
         a.onclick = function (e) {
             e.preventDefault();
             const settings = at.settings;
+            console.log('切换布局模式:', e.target.dataset.layout);
+            
             switch (e.target.dataset.layout) {
                 case 'page':
                     settings.display.layoutMode = alphaTab.LayoutMode.Page;
                     settings.player.scrollMode = alphaTab.ScrollMode.Continuous;
+                    console.log('设置为垂直布局，滚动模式:', settings.player.scrollMode);
                     break;
                 case 'horizontal-bar':
                     settings.display.layoutMode = alphaTab.LayoutMode.Horizontal;
                     settings.player.scrollMode = alphaTab.ScrollMode.Continuous;
+                    console.log('设置为水平条形布局，滚动模式:', settings.player.scrollMode);
                     break;
                 case 'horizontal-screen':
                     settings.display.layoutMode = alphaTab.LayoutMode.Horizontal;
                     settings.player.scrollMode = alphaTab.ScrollMode.OffScreen;
+                    console.log('设置为水平屏幕布局，滚动模式:', settings.player.scrollMode);
                     break;
             }
 

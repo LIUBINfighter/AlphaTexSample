@@ -58,6 +58,7 @@ body {
     right: 0;
     bottom: 0;
     overflow-y: auto;
+    overflow-x: auto; /* 添加水平滚动支持 */
     padding-right: 20px;
 }
 
