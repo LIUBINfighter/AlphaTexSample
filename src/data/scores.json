@@ -1,6 +1,11 @@
 {
   "scores": [
     {
+      "file": "吉他与孤独与蓝色星球.gpx",
+      "title": "吉他与孤独与蓝色星球(GPX)",
+      "artist": "B站@小樱同学_Official"
+    },
+    {
       "file": "ギターと孤独と蒼い惑星.gp",
       "title": "吉他与孤独与蓝色星球",
       "artist": "Kessoku Band",
@@ -13,18 +18,13 @@
     },
     {
       "file": "Lycoris Recoil 花の塔.gp",
-      "title": "花之塔",
+      "title": "花之塔(GP)",
       "artist": "Lycoris Recoil",
       "tags": "莉可丽丝"
     },
     {
-      "file": "吉他与孤独与蓝色星球.gpx",
-      "title": "吉他与孤独与蓝色星球(GPX)",
-      "artist": "B站@小樱同学_Official"
-    },
-    {
       "file": "东方妖妖梦 - 幽雅に咲かせ、墨染の桜　～ Border of Life(Drop D).gp5",
-      "title": "幽雅地绽放吧，墨染的樱花",
+      "title": "幽雅地绽放吧，墨染的樱花(GP5)",
       "artist": "Zun",
       "tags": "东方"
     }

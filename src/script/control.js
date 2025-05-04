@@ -106,7 +106,8 @@ function setupControl(selector) {
 
     const viewPort = control.querySelector('.at-viewport');
     const at = new alphaTab.AlphaTabApi(el, {
-        file: 'https://www.alphatab.net/files/canon.gp',
+        // file: 'https://www.alphatab.net/files/canon.gp',
+        file: 'assets/scores/吉他与孤独与蓝色星球.gpx',
         player: {
             enablePlayer: true,
             soundFont: 'https://cdn.jsdelivr.net/npm/@coderline/alphatab@alpha/dist/soundfont/sonivox.sf2',
