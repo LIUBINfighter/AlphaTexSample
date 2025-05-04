@@ -262,20 +262,20 @@ function setupControl(selector) {
 
     // 添加调试代码监控滚动行为
     at.playerPositionChanged.on(function (args) {
-        console.log('播放位置:', args.currentTime.toFixed(2), 
-                    '当前小节索引:', args.beat ? args.beat.index : 'unknown',
-                    '自动滚动模式:', at.settings.player.scrollMode);
+        // console.log('播放位置:', args.currentTime.toFixed(2), 
+        //             '当前小节索引:', args.beat ? args.beat.index : 'unknown',
+        //             '自动滚动模式:', at.settings.player.scrollMode);
     });
 
     // 添加调试代码监控视图对象
-    console.log('滚动容器:', viewPort);
-    console.log('滚动设置:', {
-        scrollMode: at.settings.player.scrollMode,
-        scrollSpeed: at.settings.player.scrollSpeed,
-        scrollOffsetX: at.settings.player.scrollOffsetX,
-        scrollOffsetY: at.settings.player.scrollOffsetY,
-        layoutMode: at.settings.display.layoutMode
-    });
+    // console.log('滚动容器:', viewPort);
+    // console.log('滚动设置:', {
+    //     scrollMode: at.settings.player.scrollMode,
+    //     scrollSpeed: at.settings.player.scrollSpeed,
+    //     scrollOffsetX: at.settings.player.scrollOffsetX,
+    //     scrollOffsetY: at.settings.player.scrollOffsetY,
+    //     layoutMode: at.settings.display.layoutMode
+    // });
 
     const playPauseButton = control.querySelector('.at-play-pause');
     at.playerReady.on(function () {
@@ -286,10 +286,10 @@ function setupControl(selector) {
 
     at.playerStateChanged.on(function (args) {
         const icon = playPauseButton.querySelector('i');
-        console.log('播放状态改变:', args.state, '图标元素:', icon);
+        // console.log('播放状态改变:', args.state, '图标元素:', icon);
         
         if (!icon) {
-            console.error('播放图标元素不存在，这会影响滚动功能');
+            // console.error('播放图标元素不存在，这会影响滚动功能');
             return; // 防止在null上调用方法
         }
         
@@ -297,12 +297,12 @@ function setupControl(selector) {
             // 使用data-lucide属性替换图标
             icon.setAttribute('data-lucide', 'play');
             lucide.replace(); // 刷新图标
-            console.log('播放状态: 停止');
+            // console.log('播放状态: 停止');
         } else {
             // 使用data-lucide属性替换图标
             icon.setAttribute('data-lucide', 'pause');
             lucide.replace(); // 刷新图标
-            console.log('播放状态: 播放');
+            // console.log('播放状态: 播放');
         }
     });
 
