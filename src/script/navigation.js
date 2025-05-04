@@ -1,17 +1,22 @@
 // 加载曲谱列表的通用功能
 
 document.addEventListener('DOMContentLoaded', () => {
+    // 仅在编辑器页面执行
+    if (!window.location.href.includes('editor.html')) {
+        return;
+    }
+    
     const scoreList = document.querySelector('.app-sidebar .score-items');
     if (!scoreList) {
         console.error('找不到曲谱列表元素');
         return;
     }
     
-    console.log('开始初始化通用曲谱列表功能');
+    console.log('开始初始化编辑器页面曲谱列表');
     
     try {
-        // 从外部JSON文件加载曲谱列表
-        fetch('data/scores.json')
+        // 编辑器页面也使用scores.json作为数据源
+        fetch('../data/scores.json')
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
@@ -19,7 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return response.json();
             })
             .then(data => {
-                console.log('加载曲谱列表:', data.scores);
+                console.log('加载编辑器曲谱列表:', data.scores);
                 scoreList.innerHTML = '';
                 data.scores.forEach(score => {
                     console.log('添加曲谱:', score.file);
@@ -31,12 +36,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         li.setAttribute('title', `${score.title || score.file} - ${score.artist}`);
                     }
                     
-                    // 在editor.html页面上，点击曲谱仅展示信息
-                    if (window.location.href.includes('editor.html')) {
-                        li.onclick = () => {
-                            alert(`将在编辑器中打开: ${score.title || score.file}\n作者: ${score.artist || '未知'}`);
-                        };
-                    }
+                    // 编辑器页面上，点击曲谱仅展示信息
+                    li.onclick = () => {
+                        alert(`将在编辑器中打开: ${score.title || score.file}\n作者: ${score.artist || '未知'}`);
+                    };
                     
                     scoreList.appendChild(li);
                 });

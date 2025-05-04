@@ -1,4 +1,5 @@
 import * as alphaTab from 'https://cdn.jsdelivr.net/npm/@coderline/alphatab@latest/dist/alphaTab.min.mjs';
+import { loadSidebarScores } from './sidebar-loader.js';
 
 // 添加FOUC防护函数
 function preventFOUC() {
@@ -80,72 +81,28 @@ function setupControl(selector) {
     
     // 初始化曲谱列表
     const scoreList = document.querySelector('.app-sidebar .score-items');
-    if (!scoreList) {
-        console.error('找不到曲谱列表元素');
-        return;
-    }
-    
-    console.log('开始初始化曲谱列表功能');
-    function loadScoreList() {
-        try {
-            // 从外部JSON文件加载曲谱列表
-            fetch('data/scores.json')
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    console.log('加载曲谱列表:', data.scores);
-                    scoreList.innerHTML = '';
-                    data.scores.forEach(score => {
-                        console.log('添加曲谱:', score.file);
-                        const li = document.createElement('li');
-                        // 如果有标题则显示标题，否则显示文件名
-                        li.textContent = score.title || score.file;
-                        // 添加提示信息
-                        if (score.artist) {
-                            li.setAttribute('title', `${score.title || score.file} - ${score.artist}`);
-                        }
-                        li.onclick = async () => {
-                            // 移除之前选中的项
-                            document.querySelectorAll('.score-items li').forEach(item => {
-                                item.classList.remove('active');
-                            });
-                            li.classList.add('active');
-                            
-                            try {
-                                console.log('开始加载曲谱:', score.file);
-                                // 检查文件是否存在
-                                const response = await fetch(`assets/scores/${score.file}`);
-                                if (!response.ok) {
-                                    throw new Error(`文件加载失败: ${response.status}`);
-                                }
-                                const arrayBuffer = await response.arrayBuffer();
-                                console.log('曲谱文件已加载，开始解析');
-                                at.load(arrayBuffer, [0]).catch(e => {
-                                    console.error('曲谱解析失败:', e);
-                                    alert('曲谱格式不支持或已损坏');
-                                });
-                            } catch (error) {
-                                // console.error('加载曲谱出错:', error);
-                                // alert(`无法加载曲谱: ${error.message}`);
-                            }
-                        };
-                        scoreList.appendChild(li);
-                    });
-                })
-                .catch(error => {
-                    console.error('加载曲谱列表JSON失败:', error);
-                    // 加载失败时显示错误信息
-                    scoreList.innerHTML = '<li style="color: red;">加载曲谱列表失败</li>';
+    if (scoreList) {
+        // 使用独立的模块加载边栏曲谱列表，仅在播放器页面执行此逻辑
+        loadSidebarScores(scoreList, async (score) => {
+            try {
+                console.log('开始加载曲谱:', score.file);
+                // 检查文件是否存在
+                const response = await fetch(`../assets/scores/${score.file}`);
+                if (!response.ok) {
+                    throw new Error(`文件加载失败: ${response.status}`);
+                }
+                const arrayBuffer = await response.arrayBuffer();
+                console.log('曲谱文件已加载，开始解析');
+                at.load(arrayBuffer, [0]).catch(e => {
+                    console.error('曲谱解析失败:', e);
+                    alert('曲谱格式不支持或已损坏');
                 });
-        } catch (error) {
-            console.error('加载曲谱列表失败:', error);
-        }
+            } catch (error) {
+                console.error('加载曲谱出错:', error);
+                // alert(`无法加载曲谱: ${error.message}`);
+            }
+        });
     }
-    loadScoreList();
 
     const viewPort = control.querySelector('.at-viewport');
     const at = new alphaTab.AlphaTabApi(el, {

@@ -3,7 +3,8 @@
     {
       "file": "ギターと孤独と蒼い惑星.gp",
       "title": "吉他与孤独与蓝色星球",
-      "artist": "FELT"
+      "artist": "FELT",
+      "tads": "孤独摇滚"
     },
     {
       "file": "ギターと孤独と蒼い惑星.gp5",
@@ -13,7 +14,8 @@
     {
       "file": "Lycoris Recoil 花の塔.gp",
       "title": "花之塔",
-      "artist": "Lycoris Recoil"
+      "artist": "Lycoris Recoil",
+      "tads": "莉可丽丝"
     },
     {
       "file": "吉他与孤独与蓝色星球.gpx",
@@ -23,7 +25,8 @@
     {
       "file": "东方妖妖梦 - 幽雅に咲かせ、墨染の桜　～ Border of Life(Drop D).gp5",
       "title": "幽雅地绽放吧，墨染的樱花",
-      "artist": "东方妖妖梦"
+      "artist": "东方妖妖梦",
+      "tads": "东方"
     }
   ]
 }
