@@ -5,10 +5,13 @@
     <meta charset="utf-8" />
     <title>AlphaTab Control Demo</title>
 
-    <!-- 预加载关键CSS并立即应用，防止FOUC -->
-    <link rel="stylesheet" href="styles/control.css" />
-    <link rel="stylesheet" href="styles/sidebar.css" />
+    <!-- 修复路径 -->
+    <link rel="stylesheet" href="src/styles/control.css" />
+    <link rel="stylesheet" href="src/styles/sidebar.css" />
     
+    <!-- 添加 favicon -->
+    <link rel="icon" href="data:," />
+
     <!-- 添加内联关键CSS防止FOUC -->
     <style>
         /* 关键渲染路径CSS，确保页面初始状态不闪烁 */
@@ -31,6 +34,7 @@
     <!-- 预加载关键图标库 -->
     <link rel="preload" href="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js" as="script" />
     <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js" defer></script>
+    <script type="module" src="src/script/control.js"></script> <!-- 修复路径 -->
 </head>
 
 <body>
@@ -213,7 +217,6 @@
             }
         });
     </script>
-    <script type="module" src="script/control.js"></script>
 </body>
 
 </html>

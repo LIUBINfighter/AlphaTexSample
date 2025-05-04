@@ -15,8 +15,8 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('开始初始化编辑器页面曲谱列表');
     
     try {
-        // 编辑器页面也使用scores.json作为数据源
-        fetch('../data/scores.json')
+        // 修复路径，确保 JSON 文件正确加载
+        fetch('src/data/scores.json') // 添加正确的相对路径
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);

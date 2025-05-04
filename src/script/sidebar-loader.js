@@ -13,8 +13,8 @@ export function loadSidebarScores(scoreList, onScoreSelected) {
     console.log('开始初始化播放器曲谱列表');
     
     try {
-        // 从外部JSON文件加载曲谱列表
-        return fetch('../data/scores.json')
+        // 修复路径，确保 JSON 文件正确加载
+        return fetch('src/data/scores.json') // 添加正确的相对路径
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);

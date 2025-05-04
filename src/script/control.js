@@ -86,8 +86,8 @@ function setupControl(selector) {
         loadSidebarScores(scoreList, async (score) => {
             try {
                 console.log('开始加载曲谱:', score.file);
-                // 检查文件是否存在
-                const response = await fetch(`../assets/scores/${score.file}`);
+                // 修复路径
+                const response = await fetch(`assets/scores/${score.file}`); // 移除多余的 "../"
                 if (!response.ok) {
                     throw new Error(`文件加载失败: ${response.status}`);
                 }
