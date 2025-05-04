@@ -1,5 +1,25 @@
 import * as alphaTab from 'https://cdn.jsdelivr.net/npm/@coderline/alphatab@latest/dist/alphaTab.min.mjs';
 
+// 添加FOUC防护函数
+function preventFOUC() {
+    // 页面完全加载后才显示内容
+    window.addEventListener('load', () => {
+        document.body.classList.add('content-loaded');
+        setTimeout(() => {
+            document.querySelector('.app-container').style.visibility = 'visible';
+        }, 100);
+    });
+
+    // 如果资源加载太慢，最多等待2秒后也要显示内容
+    setTimeout(() => {
+        document.body.classList.add('content-loaded');
+        document.querySelector('.app-container').style.visibility = 'visible';
+    }, 2000);
+}
+
+// 页面初始加载时就执行FOUC防护
+preventFOUC();
+
 const toDomElement = (function () {
     const parser = document.createElement('div');
     return function (html) {
@@ -177,6 +197,9 @@ function setupControl(selector) {
     at.renderFinished.on(function () {
         control.classList.remove('loading');
         control.style.visibility = 'visible';
+        // 确保主容器在渲染完成后可见
+        document.body.classList.add('content-loaded');
+        document.querySelector('.app-container').style.visibility = 'visible';
     });
 
     // 添加错误处理
@@ -184,6 +207,9 @@ function setupControl(selector) {
         console.error('AlphaTab error:', e);
         control.style.visibility = 'visible';
         control.classList.remove('loading');
+        // 即使出错也确保页面可见
+        document.body.classList.add('content-loaded');
+        document.querySelector('.app-container').style.visibility = 'visible';
     });
 
     at.scoreLoaded.on(function (score) {
