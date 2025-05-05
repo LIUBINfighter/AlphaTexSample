@@ -29,6 +29,12 @@ function initAlphaTexEditor() {
             scale: 1.2,
             staveProfile: alphaTab.StaveProfile.ScoreTab, // 显示五线谱和六线谱
             layoutMode: alphaTab.LayoutMode.Page // 使用分页布局
+        },
+        player: {
+            enablePlayer: true,
+            soundFont: 'https://cdn.jsdelivr.net/npm/@coderline/alphatab@alpha/dist/soundfont/sonivox.sf2',
+            scrollElement: document.querySelector('.at-viewport'),
+            scrollMode: alphaTab.ScrollMode.Continuous
         }
     });
     
@@ -199,6 +205,95 @@ function initAlphaTexEditor() {
             errorContainer.style.display = 'none';
         }, 5000);
     }
-    
+
+    // 添加播放器控制逻辑
+    const playPauseButton = document.querySelector('.at-play-pause');
+    const stopButton = document.querySelector('.at-stop');
+    const metronomeButton = document.querySelector('.at-metronome');
+    const loopButton = document.querySelector('.at-loop');
+    const timePosition = document.querySelector('.at-time-position');
+    const timeSlider = document.querySelector('.at-time-slider-value');
+
+    // 播放器准备就绪
+    api.playerReady.on(() => {
+        document.querySelectorAll('.at-player .disabled').forEach(el => {
+            el.classList.remove('disabled');
+        });
+    });
+
+    // 播放/暂停
+    playPauseButton.onclick = (e) => {
+        e.preventDefault();
+        if (!e.target.classList.contains('disabled')) {
+            api.playPause();
+        }
+    };
+
+    // 停止播放
+    stopButton.onclick = (e) => {
+        e.preventDefault();
+        if (!e.target.classList.contains('disabled')) {
+            api.stop();
+        }
+    };
+
+    // 节拍器控制
+    metronomeButton.onclick = (e) => {
+        e.preventDefault();
+        const button = e.target.closest('a');
+        button.classList.toggle('active');
+        api.metronomeVolume = button.classList.contains('active') ? 1 : 0;
+    };
+
+    // 循环控制
+    loopButton.onclick = (e) => {
+        e.preventDefault();
+        const button = e.target.closest('a');
+        button.classList.toggle('active');
+        api.isLooping = button.classList.contains('active');
+    };
+
+    // 播放器状态变化
+    api.playerStateChanged.on((args) => {
+        const icon = playPauseButton.querySelector('i');
+        if (!icon) return;
+        
+        if (args.state === 0) { // 停止状态
+            icon.setAttribute('data-lucide', 'play');
+        } else { // 播放状态
+            icon.setAttribute('data-lucide', 'pause');
+        }
+        lucide.replace();
+    });
+
+    // 播放进度更新
+    let previousTime = -1;
+    api.playerPositionChanged.on((args) => {
+        const currentSeconds = (args.currentTime / 1000) | 0;
+        if (currentSeconds === previousTime) return;
+        previousTime = currentSeconds;
+
+        // 更新时间显示
+        const formatTime = (ms) => {
+            const minutes = Math.floor(ms / 60000);
+            const seconds = Math.floor((ms % 60000) / 1000);
+            return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        };
+        timePosition.textContent = `${formatTime(args.currentTime)} / ${formatTime(args.endTime)}`;
+        
+        // 更新进度条
+        timeSlider.style.width = `${(args.currentTime / args.endTime) * 100}%`;
+    });
+
+    // 速度控制
+    document.querySelectorAll('.at-speed-options a').forEach((a) => {
+        a.onclick = (e) => {
+            e.preventDefault();
+            const speed = parseFloat(e.target.textContent);
+            api.playbackSpeed = speed;
+            document.querySelector('.at-speed-label').textContent = e.target.textContent;
+        };
+    });
+
     console.log('AlphaTex编辑器初始化完成');
 }
