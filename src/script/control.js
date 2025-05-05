@@ -6,9 +6,7 @@ function preventFOUC() {
     // 页面完全加载后才显示内容
     window.addEventListener('load', () => {
         document.body.classList.add('content-loaded');
-        setTimeout(() => {
-            document.querySelector('.app-container').style.visibility = 'visible';
-        }, 100);
+        document.querySelector('.app-container').style.visibility = 'visible';
     });
 
     // 如果资源加载太慢，最多等待2秒后也要显示内容

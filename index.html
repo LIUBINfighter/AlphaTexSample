@@ -6,8 +6,9 @@
     <title>AlphaTab Control Demo</title>
 
     <!-- 修复路径 -->
-    <link rel="stylesheet" href="src/styles/control.css" />
-    <link rel="stylesheet" href="src/styles/sidebar.css" />
+    <link rel="stylesheet" href="src/styles/control.css" /> <!-- 确保路径正确 -->
+    <link rel="stylesheet" href="src/styles/sidebar.css" /> <!-- 确保路径正确 -->
+    <link rel="stylesheet" href="src/styles/editor.css" /> <!-- 确保路径正确 -->
     
     <!-- 添加 favicon -->
     <link rel="icon" href="data:," />
@@ -15,10 +16,29 @@
     <!-- 添加内联关键CSS防止FOUC -->
     <style>
         /* 关键渲染路径CSS，确保页面初始状态不闪烁 */
-        .app-container {visibility: hidden;}
+        /* 删除对.app-container的隐藏，避免重复处理 */
         body {opacity: 0; transition: opacity 0.3s ease;}
         body.content-loaded {opacity: 1;}
         .at-wrap.loading {visibility: hidden;}
+        
+        /* 添加侧栏文本处理，防止截断 */
+        .app-button, 
+        .score-items li {
+            white-space: normal;
+            word-break: break-all;
+        }
+        
+        /* 修复.app-content的overflow，避免双滚动条 */
+        .app-content {
+            flex-grow: 1;
+            overflow: hidden; /* 从auto改为hidden，避免双滚动条 */
+        }
+        
+        /* 为视口添加底部填充，防止内容被底栏遮挡 */
+        .at-viewport {
+            padding-bottom: 60px; /* 与底栏高度一致 */
+            box-sizing: border-box; /* 避免撑开滚动条 */
+        }
     </style>
 
     <!-- 异步加载非关键CSS -->
@@ -27,14 +47,15 @@
     
     <!-- 延迟加载JavaScript -->
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js" crossorigin="anonymous" defer></script>
-    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" crossorigin="anonymous" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/popper.min.js" crossorigin="anonymous" defer></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" crossorigin="anonymous" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/handlebars@4.5.3/dist/handlebars.min.js" crossorigin="anonymous" defer></script>
 
     <!-- 预加载关键图标库 -->
     <link rel="preload" href="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js" as="script" />
-    <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js" defer></script>
-    <script type="module" src="src/script/control.js"></script> <!-- 修复路径 -->
+    <!-- 优化Lucide加载，直接在加载完成后执行createIcons -->
+    <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js" onload="lucide.createIcons()" defer></script>
+    <script type="module" src="src/script/control.js"></script> <!-- 确保路径正确 -->
 </head>
 
 <body>
@@ -48,151 +69,153 @@
         </div>
         <div class="app-content">
             <div class="at-wrap loading" style="visibility:hidden">
-        <div class="at-overlay">
-            <div class="at-overlay-content">
-                <div class="spinner-border" style="width: 3rem; height: 3rem;" role="status"></div>
-            </div>
-        </div>
-        <div class="at-content">
-            <div class="at-sidebar">
-                <div class="at-sidebar-content">
-                    <div class="at-track-list"></div>
-                </div>
-            </div>
-            <div class="at-viewport">
-                <div class="at-canvas" id="alphaTab"></div>
-            </div>
-        </div>
-        <div class="at-footer">
-            <div class="at-time-slider">
-                <div class="at-time-slider-value"></div>
-            </div>
-            <div class="at-player">
-                
-                <div class="at-player-left">
-                    <a href="#" class="at-stop disabled" data-toggle="tooltip" data-placement="top" title="Stop">
-                        <i data-lucide="stop-circle"></i> <!-- 替换为 Lucide 的停止图标 -->
-                    </a>
-                    <a href="#"
-                        class="at-play-pause disabled"
-                        data-toggle="tooltip"
-                        data-placement="top"
-                        title="Play/Pause"
-                    >
-                        <i data-lucide="play"></i> <!-- 替换为 Lucide 的播放图标 -->
-                    </a>
-
-                    <div class="btn-group dropup">
-                        <button
-                            type="button"
-                            class="btn dropdown-toggle"
-                            data-toggle="dropdown"
-                            aria-haspopup="true"
-                            aria-expanded="false"
-                        >
-                            <i data-lucide="gauge"></i>
-                            <span class="at-speed-label">1x</span>
-                        </button>
-                        <div class="dropdown-menu dropdown-menu at-speed-options">
-                            <a class="dropdown-item" href="#">0.25x</a>
-                            <a class="dropdown-item" href="#">0.5x</a>
-                            <a class="dropdown-item" href="#">0.75x</a>
-                            <a class="dropdown-item" href="#">0.9x</a>
-                            <a class="dropdown-item" href="#">1x</a>
-                            <a class="dropdown-item" href="#">1.1x</a>
-                            <a class="dropdown-item" href="#">1.25x</a>
-                            <a class="dropdown-item" href="#">1.50x</a>
-                            <a class="dropdown-item" href="#">2x</a>
-                        </div>
-                    </div>
-
-                    <div class="at-player-loading progress">
-                        <span class="progress-left">
-                            <span class="progress-bar"></span>
-                        </span>
-                        <span class="progress-right">
-                            <span class="progress-bar"></span>
-                        </span>
-                        <div
-                            class="progress-value w-100 h-100 rounded-circle d-flex align-items-center justify-content-center font-weight-bold"
-                        >
-                            <span class="progress-value-number">0</span><sup class="small">%</sup>
-                        </div>
-                    </div>
-                    <div class="at-song-details">
-                        <span class="at-song-title"></span> - 
-                        <span class="at-song-artist"></span>
-                    </div>
-                    <div class="at-time-position" data-toggle="tooltip" data-placement="top" title="Time Position"></div>
-                </div>
-
-                <div class="at-player-right">
-                    <a href="#" class="at-count-in disabled" data-toggle="tooltip" data-placement="top" title="Count-In">
-                        <i data-lucide="hourglass"></i> <!-- 替换为 Lucide 的计时图标 -->
-                    </a>
-                    <a href="#" class="at-metronome disabled" data-toggle="tooltip" data-placement="top" title="Metronome">
-                        <i data-lucide="music"></i> <!-- 替换为 Lucide 的节拍器图标 -->
-                    </a>
-                    <a href="#" class="at-loop disabled" data-toggle="tooltip" data-placement="top" title="Loop">
-                        <i data-lucide="repeat"></i> <!-- 替换为 Lucide 的循环图标 -->
-                    </a>
-                    <a href="#" class="at-print" data-toggle="tooltip" data-placement="top" title="Print">
-                        <i data-lucide="printer"></i> <!-- 替换为 Lucide 的打印图标 -->
-                    </a>
-                    <a href="#" class="at-download" data-toggle="tooltip" data-placement="top" title="Download">
-                        <i data-lucide="download-cloud"></i> <!-- 替换为 Lucide 的下载图标 -->
-                    </a>                
-
-                    <div class="btn-group dropup">
-                        <button
-                            type="button"
-                            class="btn dropdown-toggle"
-                            data-toggle="dropdown"
-                            aria-haspopup="true"
-                            aria-expanded="false"
-                        >
-                            <i data-lucide="zoom-in"></i>
-                            <span class="at-zoom-label">100%</span>
-                        </button>
-                        <div class="dropdown-menu dropdown-menu-right at-zoom-options">
-                            <a class="dropdown-item" href="#">25%</a>
-                            <a class="dropdown-item" href="#">50%</a>
-                            <a class="dropdown-item" href="#">75%</a>
-                            <a class="dropdown-item" href="#">90%</a>
-                            <a class="dropdown-item" href="#">100%</a>
-                            <a class="dropdown-item" href="#">110%</a>
-                            <a class="dropdown-item" href="#">125%</a>
-                            <a class="dropdown-item" href="#">150%</a>
-                            <a class="dropdown-item" href="#">200%</a>
-                        </div>
-                    </div>
-
-                    <div class="btn-group dropup">
-                        <button
-                            type="button"
-                            class="btn dropdown-toggle at-layout-button"
-                            data-toggle="dropdown"
-                            aria-haspopup="true"
-                            aria-expanded="false"
-                        >
-                            Layout
-                        </button>
-                        <div class="dropdown-menu dropdown-menu-right at-layout-options">
-                            <a class="dropdown-item" href="#" data-layout="horizontal-screen">
-                                <i data-lucide="arrow-right"></i> Horizontal Layout (Off-Screen)
-                            </a>
-                            <a class="dropdown-item" href="#" data-layout="horizontal-bar">
-                                <i data-lucide="align-justify"></i> Horizontal Layout (Bar Wise)
-                            </a>
-                            <a class="dropdown-item" href="#" data-layout="page">
-                                <i data-lucide="align-vertical-justify-center"></i> Vertical Layout
-                            </a>
-                        </div>
+                <div class="at-overlay">
+                    <div class="at-overlay-content">
+                        <div class="spinner-border" style="width: 3rem; height: 3rem;" role="status"></div>
                     </div>
                 </div>
-            </div>
-        </div>
-    </div>
+                <div class="at-content">
+                    <div class="at-sidebar">
+                        <div class="at-sidebar-content">
+                            <div class="at-track-list"></div>
+                        </div>
+                    </div>
+                    <div class="at-viewport">
+                        <div class="at-canvas" id="alphaTab"></div>
+                    </div>
+                </div>
+                <div class="at-footer">
+                    <div class="at-time-slider">
+                        <div class="at-time-slider-value"></div>
+                    </div>
+                    <div class="at-player">
+                        
+                        <div class="at-player-left">
+                            <a href="#" class="at-stop disabled" data-toggle="tooltip" data-placement="top" title="Stop">
+                                <i data-lucide="stop-circle"></i> <!-- 替换为 Lucide 的停止图标 -->
+                            </a>
+                            <a href="#"
+                                class="at-play-pause disabled"
+                                data-toggle="tooltip"
+                                data-placement="top"
+                                title="Play/Pause"
+                            >
+                                <i data-lucide="play"></i> <!-- 替换为 Lucide 的播放图标 -->
+                            </a>
+
+                            <div class="btn-group dropup">
+                                <button
+                                    type="button"
+                                    class="btn dropdown-toggle"
+                                    data-toggle="dropdown"
+                                    aria-haspopup="true"
+                                    aria-expanded="false"
+                                >
+                                    <i data-lucide="gauge"></i>
+                                    <span class="at-speed-label">1x</span>
+                                </button>
+                                <div class="dropdown-menu dropdown-menu at-speed-options">
+                                    <a class="dropdown-item" href="#">0.25x</a>
+                                    <a class="dropdown-item" href="#">0.5x</a>
+                                    <a class="dropdown-item" href="#">0.75x</a>
+                                    <a class="dropdown-item" href="#">0.9x</a>
+                                    <a class="dropdown-item" href="#">1x</a>
+                                    <a class="dropdown-item" href="#">1.1x</a>
+                                    <a class="dropdown-item" href="#">1.25x</a>
+                                    <a class="dropdown-item" href="#">1.50x</a>
+                                    <a class="dropdown-item" href="#">2x</a>
+                                </div>
+                            </div>
+
+                            <div class="at-player-loading progress">
+                                <span class="progress-left">
+                                    <span class="progress-bar"></span>
+                                </span>
+                                <span class="progress-right">
+                                    <span class="progress-bar"></span>
+                                </span>
+                                <div
+                                    class="progress-value w-100 h-100 rounded-circle d-flex align-items-center justify-content-center font-weight-bold"
+                                >
+                                    <span class="progress-value-number">0</span><sup class="small">%</sup>
+                                </div>
+                            </div>
+                            <div class="at-song-details">
+                                <span class="at-song-title"></span> - 
+                                <span class="at-song-artist"></span>
+                            </div>
+                            <div class="at-time-position" data-toggle="tooltip" data-placement="top" title="Time Position"></div>
+                        </div>
+
+                        <div class="at-player-right">
+                            <a href="#" class="at-count-in disabled" data-toggle="tooltip" data-placement="top" title="Count-In">
+                                <i data-lucide="hourglass"></i> <!-- 替换为 Lucide 的计时图标 -->
+                            </a>
+                            <a href="#" class="at-metronome disabled" data-toggle="tooltip" data-placement="top" title="Metronome">
+                                <i data-lucide="music"></i> <!-- 替换为 Lucide 的节拍器图标 -->
+                            </a>
+                            <a href="#" class="at-loop disabled" data-toggle="tooltip" data-placement="top" title="Loop">
+                                <i data-lucide="repeat"></i> <!-- 替换为 Lucide 的循环图标 -->
+                            </a>
+                            <a href="#" class="at-print" data-toggle="tooltip" data-placement="top" title="Print">
+                                <i data-lucide="printer"></i> <!-- 替换为 Lucide 的打印图标 -->
+                            </a>
+                            <a href="#" class="at-download" data-toggle="tooltip" data-placement="top" title="Download">
+                                <i data-lucide="download-cloud"></i> <!-- 替换为 Lucide 的下载图标 -->
+                            </a>                
+
+                            <div class="btn-group dropup">
+                                <button
+                                    type="button"
+                                    class="btn dropdown-toggle"
+                                    data-toggle="dropdown"
+                                    aria-haspopup="true"
+                                    aria-expanded="false"
+                                >
+                                    <i data-lucide="zoom-in"></i>
+                                    <span class="at-zoom-label">100%</span>
+                                </button>
+                                <div class="dropdown-menu dropdown-menu-right at-zoom-options">
+                                    <a class="dropdown-item" href="#">25%</a>
+                                    <a class="dropdown-item" href="#">50%</a>
+                                    <a class="dropdown-item" href="#">75%</a>
+                                    <a class="dropdown-item" href="#">90%</a>
+                                    <a class="dropdown-item" href="#">100%</a>
+                                    <a class="dropdown-item" href="#">110%</a>
+                                    <a class="dropdown-item" href="#">125%</a>
+                                    <a class="dropdown-item" href="#">150%</a>
+                                    <a class="dropdown-item" href="#">200%</a>
+                                </div>
+                            </div>
+
+                            <div class="btn-group dropup">
+                                <button
+                                    type="button"
+                                    class="btn dropdown-toggle at-layout-button"
+                                    data-toggle="dropdown"
+                                    aria-haspopup="true"
+                                    aria-expanded="false"
+                                >
+                                    Layout
+                                </button>
+                                <div class="dropdown-menu dropdown-menu-right at-layout-options">
+                                    <a class="dropdown-item" href="#" data-layout="horizontal-screen">
+                                        <i data-lucide="arrow-right"></i> Horizontal Layout (Off-Screen)
+                                    </a>
+                                    <a class="dropdown-item" href="#" data-layout="horizontal-bar">
+                                        <i data-lucide="align-justify"></i> Horizontal Layout (Bar Wise)
+                                    </a>
+                                    <a class="dropdown-item" href="#" data-layout="page">
+                                        <i data-lucide="align-vertical-justify-center"></i> Vertical Layout
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div><!-- 闭合.at-wrap -->
+        </div><!-- 闭合.app-content -->
+    </div><!-- 闭合.app-container -->
 
     <template id="at-track-template">
         <div class="at-track">
@@ -210,11 +233,11 @@
     </template>
     
     <script>
-        // 在页面加载完成后初始化所有 Lucide 图标
+        // 在页面加载完成后显示内容，防止FOUC
+        // 由于lucide.createIcons()已在脚本加载后直接执行，这里只需处理页面可见性
         document.addEventListener('DOMContentLoaded', () => {
-            if (window.lucide) {
-                lucide.createIcons();
-            }
+            document.body.classList.add('content-loaded');
+            // 不再需要设置app-container的visibility，因为通过body的opacity控制整体可见性
         });
     </script>
 </body>
