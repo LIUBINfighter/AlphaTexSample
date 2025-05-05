@@ -295,5 +295,49 @@ function initAlphaTexEditor() {
         };
     });
 
+    // 添加缩放功能实现
+    document.querySelectorAll('.at-zoom-options .dropdown-item').forEach((item) => {
+        item.onclick = (e) => {
+            e.preventDefault();
+            // 解析缩放百分比
+            const scale = parseInt(e.target.textContent) / 100;
+            // 更新缩放设置
+            api.settings.display.scale = scale;
+            // 更新显示的缩放比例文本
+            document.querySelector('.at-zoom-label').textContent = e.target.textContent;
+            // 应用更改并重新渲染
+            api.updateSettings();
+            api.render();
+        };
+    });
+
+    // 在初始化时设置默认缩放比例
+    api.settings.display.scale = 1.0;
+    document.querySelector('.at-zoom-label').textContent = '100%';
+    
+    // 监听窗口大小变化，自动调整缩放（可选）
+    window.addEventListener('resize', () => {
+        // 使用防抖处理resize事件
+        clearTimeout(window.resizeTimer);
+        window.resizeTimer = setTimeout(() => {
+            const width = window.innerWidth;
+            let scale = 1.0;
+            
+            // 根据窗口宽度调整缩放
+            if (width > 1300) {
+                scale = 1.2;
+            } else if (width > 800) {
+                scale = 1.0;
+            } else {
+                scale = 0.8;
+            }
+            
+            api.settings.display.scale = scale;
+            document.querySelector('.at-zoom-label').textContent = `${scale * 100}%`;
+            api.updateSettings();
+            api.render();
+        }, 250);
+    });
+
     console.log('AlphaTex编辑器初始化完成');
 }

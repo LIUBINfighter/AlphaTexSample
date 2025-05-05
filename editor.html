@@ -52,7 +52,82 @@
                     <textarea id="alphatex-editor" class="alphatex-editor"></textarea>
                 </div>
                 <div class="preview-panel">
-                    <div id="alphatex-preview"></div>
+                    <div class="at-wrap">
+                        <div class="at-overlay">
+                            <div class="at-overlay-content">
+                                <div class="spinner-border" role="status"></div>
+                            </div>
+                        </div>
+                        <div class="at-content">
+                            <div class="at-viewport">
+                                <div id="alphatex-preview"></div>
+                            </div>
+                        </div>
+                        <div class="at-footer">
+                            <div class="at-time-slider">
+                                <div class="at-time-slider-value"></div>
+                            </div>
+                            <div class="at-player">
+                                <div class="at-player-left">
+                                    <a href="#" class="at-stop disabled" data-toggle="tooltip" title="停止">
+                                        <i data-lucide="stop-circle"></i>
+                                    </a>
+                                    <a href="#" class="at-play-pause disabled" data-toggle="tooltip" title="播放/暂停">
+                                        <i data-lucide="play"></i>
+                                    </a>
+                                    <div class="btn-group dropup">
+                                        <button class="btn dropdown-toggle">
+                                            <i data-lucide="gauge"></i>
+                                            <span class="at-speed-label">1x</span>
+                                        </button>
+                                        <div class="dropdown-menu at-speed-options">
+                                            <a class="dropdown-item" href="#">0.25x</a>
+                                            <a class="dropdown-item" href="#">0.5x</a>
+                                            <a class="dropdown-item" href="#">1x</a>
+                                            <a class="dropdown-item" href="#">1.25x</a>
+                                            <a class="dropdown-item" href="#">1.5x</a>
+                                            <a class="dropdown-item" href="#">2x</a>
+                                        </div>
+                                    </div>
+                                    <div class="at-player-loading progress">
+                                        <span class="progress-left">
+                                            <span class="progress-bar"></span>
+                                        </span>
+                                        <span class="progress-right">
+                                            <span class="progress-bar"></span>
+                                        </span>
+                                        <div class="progress-value w-100 h-100 rounded-circle d-flex align-items-center justify-content-center font-weight-bold">
+                                            <span class="progress-value-number">0</span><sup class="small">%</sup>
+                                        </div>
+                                    </div>
+                                    <div class="at-time-position"></div>
+                                </div>
+                                <div class="at-player-right">
+                                    <a href="#" class="at-metronome disabled" data-toggle="tooltip" title="节拍器">
+                                        <i data-lucide="music"></i>
+                                    </a>
+                                    <a href="#" class="at-loop disabled" data-toggle="tooltip" title="循环">
+                                        <i data-lucide="repeat"></i>
+                                    </a>
+                                    <!-- 添加缩放控制按钮组 -->
+                                    <div class="btn-group dropup">
+                                        <button class="btn dropdown-toggle" data-toggle="dropdown">
+                                            <i data-lucide="zoom-in"></i>
+                                            <span class="at-zoom-label">100%</span>
+                                        </button>
+                                        <div class="dropdown-menu at-zoom-options">
+                                            <a class="dropdown-item" href="#">50%</a>
+                                            <a class="dropdown-item" href="#">75%</a>
+                                            <a class="dropdown-item" href="#">100%</a>
+                                            <a class="dropdown-item" href="#">125%</a>
+                                            <a class="dropdown-item" href="#">150%</a>
+                                            <a class="dropdown-item" href="#">200%</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     <div class="loading-indicator">
                         <div class="spinner-border" role="status">
                             <span class="sr-only">加载中...</span>
