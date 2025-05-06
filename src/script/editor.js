@@ -26,6 +26,18 @@ class EditorState {
         if (!this._isDirty) return true;
         return confirm(`当前曲谱未保存，确定要${action}吗？`);
     }
+
+    updateCurrentScore(id) {
+        this._currentScoreId = id;
+    }
+
+    getCurrentScoreId() {
+        return this._currentScoreId;
+    }
+
+    hasCurrentScore() {
+        return this._currentScoreId !== null;
+    }
 }
 
 // 等待DOM加载完成
@@ -189,14 +201,35 @@ function initAlphaTexEditor() {
         }
     });
     
-    // 修改保存按钮事件处理
+    // 保存按钮事件处理
     document.getElementById('btn-save').addEventListener('click', () => {
+        if (!editorState.hasCurrentScore()) {
+            // 如果没有当前曲谱ID，提示需要先另存为
+            showError('请先使用"另存为"创建新曲谱');
+            return;
+        }
+
+        try {
+            // 使用当前曲谱ID更新内容
+            window.scoreManager.updateScore(
+                editorState.getCurrentScoreId(), 
+                editorElement.value
+            );
+            editorState.markSaved(editorState.getCurrentScoreId(), editorElement.value);
+            showSuccess('保存成功');
+        } catch (e) {
+            showError('保存失败: ' + e.message);
+        }
+    });
+
+    // 另存为按钮事件处理（原保存逻辑移到这里）
+    document.getElementById('btn-save-as').addEventListener('click', () => {
         const title = prompt('请输入曲谱标题:', '未命名曲谱');
         if (title !== null) { // 用户没有取消
             try {
                 const id = window.scoreManager.saveScore(title, editorElement.value);
                 editorState.markSaved(id, editorElement.value);
-                showSuccess('保存成功');
+                showSuccess('另存为成功');
             } catch (e) {
                 showError('保存失败: ' + e.message);
             }
@@ -224,6 +257,7 @@ function initAlphaTexEditor() {
             try {
                 api.tex(content);
                 editorState.markSaved(score.id, content);
+                editorState.updateCurrentScore(score.id); // 更新当前曲谱ID
             } catch (error) {
                 console.warn('渲染曲谱出现问题:', error);
                 showError('曲谱已加载，但渲染可能存在问题。建议检查格式。');

@@ -59,6 +59,22 @@ class ScoreManager {
         }
     }
 
+    // 更新现有曲谱
+    updateScore(id, content) {
+        const scoreIndex = this.scores.findIndex(s => s.id === id);
+        if (scoreIndex === -1) {
+            throw new Error('找不到要更新的曲谱');
+        }
+
+        // 更新内容和日期
+        this.scores[scoreIndex].content = content.trim() + '\n';
+        this.scores[scoreIndex].date = new Date().toLocaleString() + ' (已更新)';
+
+        // 保存并刷新列表
+        this.saveToStorage();
+        this.renderScoreList();
+    }
+
     // 删除曲谱
     deleteScore(id) {
         this.scores = this.scores.filter(s => s.id !== id);
