@@ -189,14 +189,10 @@ function initAlphaTexEditor() {
         }
     });
     
+    // 修改保存按钮事件处理
     document.getElementById('btn-save').addEventListener('click', () => {
-        if (!window.scoreManager.validateScore(editorElement.value)) {
-            showError('曲谱内容无效，请检查格式');
-            return;
-        }
-        
         const title = prompt('请输入曲谱标题:', '未命名曲谱');
-        if (title) {
+        if (title !== null) { // 用户没有取消
             try {
                 const id = window.scoreManager.saveScore(title, editorElement.value);
                 editorState.markSaved(id, editorElement.value);
@@ -220,29 +216,17 @@ function initAlphaTexEditor() {
         }
 
         try {
-            // 尝试预处理和验证内容
+            // 直接加载内容
             const content = score.content.trim() + '\n';
-            
-            // 验证曲谱内容
-            if (!window.scoreManager.validateScore(content)) {
-                showError('曲谱内容无效，请检查格式');
-                return;
-            }
-            
             editorElement.value = content;
             
-            // 使用 try-catch 包装 tex() 调用
+            // 尝试渲染，但渲染失败不影响加载
             try {
                 api.tex(content);
                 editorState.markSaved(score.id, content);
             } catch (error) {
-                console.error('渲染曲谱失败:', error);
-                showError('渲染曲谱失败: ' + error.message);
-                
-                // 如果渲染失败，回退到一个简单的示例
-                editorElement.value = defaultAlphaTex;
-                api.tex(defaultAlphaTex);
-                editorState.markSaved(null, defaultAlphaTex);
+                console.warn('渲染曲谱出现问题:', error);
+                showError('曲谱已加载，但渲染可能存在问题。建议检查格式。');
             }
         } catch (error) {
             console.error('加载曲谱失败:', error);
