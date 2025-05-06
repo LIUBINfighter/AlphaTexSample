@@ -242,20 +242,19 @@ function initAlphaTexEditor() {
     
     // 保存按钮事件处理
     document.getElementById('btn-save').addEventListener('click', () => {
-        if (!editorState.hasCurrentScore()) {
-            // 如果没有当前曲谱ID，提示需要先另存为
-            showError('请先使用"另存为"创建新曲谱');
-            return;
-        }
-
+        const currentId = editorState.getCurrentScoreId();
+        
         try {
-            // 使用当前曲谱ID更新内容
-            window.scoreManager.updateScore(
-                editorState.getCurrentScoreId(), 
-                editorElement.value
-            );
-            editorState.markSaved(editorState.getCurrentScoreId(), editorElement.value);
-            showSuccess('保存成功');
+            // 如果有当前曲谱ID就更新，没有就相当于另存为
+            if (currentId) {
+                window.scoreManager.updateScore(currentId, editorElement.value);
+                editorState.markSaved(currentId, editorElement.value);
+                showSuccess('保存成功');
+            } else {
+                const id = window.scoreManager.saveScore('未命名曲谱', editorElement.value);
+                editorState.markSaved(id, editorElement.value);
+                showSuccess('保存成功');
+            }
         } catch (e) {
             showError('保存失败: ' + e.message);
         }
