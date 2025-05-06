@@ -68,7 +68,7 @@ class ScoreManager {
 
         // 更新内容和日期
         this.scores[scoreIndex].content = content.trim() + '\n';
-        this.scores[scoreIndex].date = new Date().toLocaleString() + ' (已更新)';
+        this.scores[scoreIndex].date = new Date().toLocaleString();
 
         // 保存并刷新列表
         this.saveToStorage();
@@ -91,7 +91,7 @@ class ScoreManager {
 
         // 更新标题
         this.scores[scoreIndex].title = newTitle;
-        this.scores[scoreIndex].date = this.scores[scoreIndex].date + ' (已重命名)';
+        this.scores[scoreIndex].date = new Date().toLocaleString();
 
         // 保存并刷新列表
         this.saveToStorage();
