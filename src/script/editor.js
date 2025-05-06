@@ -49,6 +49,9 @@ document.addEventListener('DOMContentLoaded', function() {
  * 初始化AlphaTex编辑器
  */
 function initAlphaTexEditor() {
+    // 添加加载状态锁
+    let isLoading = false;
+
     // 初始化状态管理器
     const editorState = new EditorState();
     
@@ -139,59 +142,95 @@ function initAlphaTexEditor() {
     
     // 注册事件处理函数
     
-    // 渲染开始事件
+    // 修改渲染开始事件
     api.renderStarted.on((resized) => {
         console.log('渲染开始', resized);
         loadingIndicator.style.display = 'block';
+        isLoading = true;
     });
     
-    // 渲染完成事件
+    // 修改渲染完成事件
     api.renderFinished.on(() => {
         console.log('渲染完成');
         loadingIndicator.style.display = 'none';
+        isLoading = false;
     });
-    
-    // 错误处理事件
-    api.error.on((error) => {
-        console.error('渲染错误:', error);
-        
-        // 处理不同类型的错误
-        let errorMessage = '';
-        if (error instanceof alphaTab.importer.UnsupportedFormatError) {
-            // 处理格式错误
-            errorMessage = '不支持的格式: ' + error.message;
-        } else if (error.cause instanceof alphaTab.importer.AlphaTexImporter.AlphaTexError) {
-            // 处理AlphaTex语法错误
-            const alphaTexError = error.cause;
-            errorMessage = `语法错误: ${alphaTexError.message}, 位置: ${alphaTexError.position}`;
-        } else {
-            // 处理其他错误
-            errorMessage = '渲染错误: ' + error.message;
+
+    // 封装渲染函数
+    async function renderScore(content) {
+        if (isLoading) {
+            console.log('已有渲染任务正在进行，等待完成...');
+            return;
+        }
+
+        try {
+            await api.tex(content);
+            return true;
+        } catch (error) {
+            console.error('渲染失败:', error);
+            showError('渲染失败: ' + error.message);
+            return false;
+        }
+    }
+
+    // 修改监听曲谱加载事件
+    document.addEventListener('scoreLoad', async (e) => {
+        if (isLoading) {
+            showError('请等待当前操作完成');
+            return;
+        }
+
+        if (!editorState.checkSafetyBefore('加载新曲谱')) {
+            return;
         }
         
-        showError(errorMessage);
+        const { score } = e.detail;
+        if (!score || !score.content) {
+            showError('无效的曲谱内容');
+            return;
+        }
+
+        try {
+            isLoading = true;
+            loadingIndicator.style.display = 'block';
+            
+            // 先更新编辑器内容
+            const content = score.content.trim() + '\n';
+            editorElement.value = content;
+            
+            // 等待渲染完成
+            const renderSuccess = await renderScore(content);
+            
+            // 更新状态
+            if (renderSuccess) {
+                editorState.markSaved(score.id, content);
+                editorState.updateCurrentScore(score.id);
+            } else {
+                showError('曲谱已加载，但渲染可能存在问题。建议检查格式。');
+            }
+        } catch (error) {
+            console.error('加载曲谱失败:', error);
+            showError('加载曲谱失败: ' + error.message);
+        } finally {
+            isLoading = false;
+            loadingIndicator.style.display = 'none';
+        }
     });
-    
-    // 监听编辑器内容变化
+
+    // 修改编辑器内容变化处理
     let debounceTimer;
     editorElement.addEventListener('input', function() {
-        // 标记编辑状态
         editorState.markDirty();
         
-        // 使用防抖技术避免频繁渲染
         clearTimeout(debounceTimer);
-        debounceTimer = setTimeout(() => {
-            errorContainer.style.display = 'none'; // 清除之前的错误
+        debounceTimer = setTimeout(async () => {
+            if (isLoading) return;
             
-            try {
-                api.tex(editorElement.value);
-            } catch (e) {
-                console.error('解析错误:', e);
-                showError('解析错误: ' + e.message);
-            }
-        }, 300); // 300ms延迟
+            errorContainer.style.display = 'none';
+            await renderScore(editorElement.value);
+        }, 500); // 增加延迟到500ms
     });
-    
+
     // 按钮事件处理
     document.getElementById('btn-new').addEventListener('click', () => {
         if (editorState.checkSafetyBefore('创建新曲谱') &&
@@ -233,38 +272,6 @@ function initAlphaTexEditor() {
             } catch (e) {
                 showError('保存失败: ' + e.message);
             }
-        }
-    });
-
-    // 监听曲谱加载事件
-    document.addEventListener('scoreLoad', (e) => {
-        if (!editorState.checkSafetyBefore('加载新曲谱')) {
-            return;
-        }
-        
-        const { score } = e.detail;
-        if (!score || !score.content) {
-            showError('无效的曲谱内容');
-            return;
-        }
-
-        try {
-            // 直接加载内容
-            const content = score.content.trim() + '\n';
-            editorElement.value = content;
-            
-            // 尝试渲染，但渲染失败不影响加载
-            try {
-                api.tex(content);
-                editorState.markSaved(score.id, content);
-                editorState.updateCurrentScore(score.id); // 更新当前曲谱ID
-            } catch (error) {
-                console.warn('渲染曲谱出现问题:', error);
-                showError('曲谱已加载，但渲染可能存在问题。建议检查格式。');
-            }
-        } catch (error) {
-            console.error('加载曲谱失败:', error);
-            showError('加载曲谱失败: ' + error.message);
         }
     });
 
