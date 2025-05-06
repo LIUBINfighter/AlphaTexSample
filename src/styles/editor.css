@@ -183,18 +183,39 @@
     gap: 4px;
 }
 
-.btn-delete {
+.btn-rename, .btn-delete {
     background: none;
     border: none;
-    color: #dc3545;
-    font-size: 18px;
-    padding: 0 4px;
+    color: #6c757d;
+    padding: 2px;
     cursor: pointer;
-    opacity: 0.5;
+    opacity: 0.7;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-rename:hover {
+    opacity: 1;
+    color: #0066cc;
+    background-color: rgba(0, 102, 204, 0.1);
 }
 
 .btn-delete:hover {
     opacity: 1;
+    color: #dc3545;
+    background-color: rgba(220, 53, 69, 0.1);
+}
+
+.btn-rename svg, .btn-delete svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* 模态框样式优化 */
+#scoreActionModal .modal-body input {
+    margin-top: 10px;
 }
 
 /* 响应式调整 */
