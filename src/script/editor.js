@@ -1,5 +1,33 @@
 import * as alphaTab from 'https://cdn.jsdelivr.net/npm/@coderline/alphatab@latest/dist/alphaTab.min.mjs';
 
+// 编辑器状态管理类
+class EditorState {
+    constructor() {
+        this._isDirty = false;
+        this._currentScoreId = null;
+        this._lastSavedContent = '';
+    }
+
+    get isDirty() {
+        return this._isDirty;
+    }
+
+    markDirty() {
+        this._isDirty = true;
+    }
+
+    markSaved(id, content) {
+        this._currentScoreId = id;
+        this._lastSavedContent = content;
+        this._isDirty = false;
+    }
+
+    checkSafetyBefore(action) {
+        if (!this._isDirty) return true;
+        return confirm(`当前曲谱未保存，确定要${action}吗？`);
+    }
+}
+
 // 等待DOM加载完成
 document.addEventListener('DOMContentLoaded', function() {
     initAlphaTexEditor();
@@ -9,6 +37,9 @@ document.addEventListener('DOMContentLoaded', function() {
  * 初始化AlphaTex编辑器
  */
 function initAlphaTexEditor() {
+    // 初始化状态管理器
+    const editorState = new EditorState();
+    
     // 获取DOM元素
     const editorElement = document.getElementById('alphatex-editor');
     const previewElement = document.getElementById('alphatex-preview');
@@ -53,11 +84,15 @@ function initAlphaTexEditor() {
     document.addEventListener('click', initAudioContext);
     
     // 设置默认AlphaTex内容
-    const defaultAlphaTex = `\\title "我的乐谱"
-\\subtitle "AlphaTex示例"
-\\tempo 120
-\\time 4/4
-
+    const defaultAlphaTex = `\\title "歌曲标题"
+\\subtitle "副标题"  
+\\artist "艺术家"  
+\\album "专辑"  
+\\words "作词"  
+\\music "作曲"  
+\\copyright "版权信息"  
+\\tempo 120  
+\\instrument 25
 .
 4.4.4 0.2.4 1.3.4 |
 4.4.4 0.2.4 1.3.4 |`;
@@ -128,6 +163,9 @@ function initAlphaTexEditor() {
     // 监听编辑器内容变化
     let debounceTimer;
     editorElement.addEventListener('input', function() {
+        // 标记编辑状态
+        editorState.markDirty();
+        
         // 使用防抖技术避免频繁渲染
         clearTimeout(debounceTimer);
         debounceTimer = setTimeout(() => {
@@ -144,23 +182,37 @@ function initAlphaTexEditor() {
     
     // 按钮事件处理
     document.getElementById('btn-new').addEventListener('click', () => {
-        if (confirm('确定要创建新的乐谱吗？当前编辑内容将会丢失。')) {
+        if (editorState.checkSafetyBefore('创建新曲谱') &&
+            confirm('确定要创建新的乐谱吗？当前编辑内容将会丢失。')) {
             editorElement.value = defaultAlphaTex;
             api.tex(defaultAlphaTex);
         }
     });
     
     document.getElementById('btn-save').addEventListener('click', () => {
+        if (!window.scoreManager.validateScore(editorElement.value)) {
+            showError('曲谱内容无效，请检查格式');
+            return;
+        }
+        
         const title = prompt('请输入曲谱标题:', '未命名曲谱');
         if (title) {
-            // 保存到临时列表
-            window.scoreManager.saveScore(title, editorElement.value);
-            showError('曲谱已保存到列表');
+            try {
+                const id = window.scoreManager.saveScore(title, editorElement.value);
+                editorState.markSaved(id, editorElement.value);
+                showSuccess('保存成功');
+            } catch (e) {
+                showError('保存失败: ' + e.message);
+            }
         }
     });
 
     // 监听曲谱加载事件
     document.addEventListener('scoreLoad', (e) => {
+        if (!editorState.checkSafetyBefore('加载新曲谱')) {
+            return;
+        }
+        
         const { score } = e.detail;
         if (!score || !score.content) {
             showError('无效的曲谱内容');
@@ -170,11 +222,19 @@ function initAlphaTexEditor() {
         try {
             // 尝试预处理和验证内容
             const content = score.content.trim() + '\n';
+            
+            // 验证曲谱内容
+            if (!window.scoreManager.validateScore(content)) {
+                showError('曲谱内容无效，请检查格式');
+                return;
+            }
+            
             editorElement.value = content;
             
             // 使用 try-catch 包装 tex() 调用
             try {
                 api.tex(content);
+                editorState.markSaved(score.id, content);
             } catch (error) {
                 console.error('渲染曲谱失败:', error);
                 showError('渲染曲谱失败: ' + error.message);
@@ -182,6 +242,7 @@ function initAlphaTexEditor() {
                 // 如果渲染失败，回退到一个简单的示例
                 editorElement.value = defaultAlphaTex;
                 api.tex(defaultAlphaTex);
+                editorState.markSaved(null, defaultAlphaTex);
             }
         } catch (error) {
             console.error('加载曲谱失败:', error);
@@ -190,6 +251,10 @@ function initAlphaTexEditor() {
     });
 
     document.getElementById('btn-examples').addEventListener('click', () => {
+        if (!editorState.checkSafetyBefore('加载示例')) {
+            return;
+        }
+        
         // 提供几个示例
         const examples = {
             '基本和弦': `\\title "基本和弦示例"
@@ -253,6 +318,23 @@ function initAlphaTexEditor() {
         }
         
         errorContainer.style.display = 'block';
+    }
+    
+    // 显示成功信息的辅助函数
+    function showSuccess(message) {
+        if(!errorContainer) return;
+        
+        errorContainer.innerHTML = `
+            <div class="success-message">${message}</div>
+            <button class="error-close" title="关闭">&times;</button>
+        `;
+        errorContainer.style.display = 'block';
+        errorContainer.style.backgroundColor = '#d4edda';
+        
+        setTimeout(() => {
+            errorContainer.style.display = 'none';
+            errorContainer.style.backgroundColor = '';
+        }, 2000);
     }
 
     // 添加播放器控制逻辑
