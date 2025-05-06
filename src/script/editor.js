@@ -126,7 +126,7 @@ function initAlphaTexEditor() {
                 api.tex(texContent);
             } catch (e) {
                 console.error('初始渲染错误:', e);
-                showError('初始渲染错误: ' + e.message);
+                showError(e, texContent);
                 // 如果加载失败，则使用默认示例
                 editorElement.value = defaultAlphaTex;
                 api.tex(defaultAlphaTex);
@@ -134,7 +134,7 @@ function initAlphaTexEditor() {
         })
         .catch(error => {
             console.error('加载文件失败:', error);
-            showError('加载示例文件失败: ' + error.message);
+            showError(error, defaultAlphaTex);
             // 使用默认示例
             editorElement.value = defaultAlphaTex;
             api.tex(defaultAlphaTex);
@@ -168,7 +168,7 @@ function initAlphaTexEditor() {
             return true;
         } catch (error) {
             console.error('渲染失败:', error);
-            showError('渲染失败: ' + error.message);
+            showError(error, content);
             return false;
         }
     }
@@ -210,12 +210,85 @@ function initAlphaTexEditor() {
             }
         } catch (error) {
             console.error('加载曲谱失败:', error);
-            showError('加载曲谱失败: ' + error.message);
+            showError(error, score.content);
         } finally {
             isLoading = false;
             loadingIndicator.style.display = 'none';
         }
     });
+
+    // 显示错误信息的辅助函数
+    function showError(error, sourceContent) {
+        if(!errorContainer) return;
+
+        let errorTitle = '错误';
+        let errorMessage = '';
+        let errorDetails = '';
+        let position = null;
+
+        // 解析不同类型的错误
+        if (typeof error === 'string') {
+            errorMessage = error;
+        } else if (error instanceof alphaTab.importer.UnsupportedFormatError) {
+            errorTitle = '格式错误';
+            if (error.cause instanceof alphaTab.importer.AlphaTexImporter.AlphaTexError) {
+                const alphaTexError = error.cause;
+                errorTitle = 'AlphaTex 语法错误';
+                errorMessage = `在第 ${alphaTexError.line} 行，第 ${alphaTexError.col} 列`;
+                errorDetails = `预期: ${alphaTexError.expected}\n实际: ${alphaTexError.symbol} "${alphaTexError.symbolData}"`;
+                position = alphaTexError.position;
+            } else {
+                errorMessage = error.message;
+            }
+        } else {
+            errorMessage = error.message || '未知错误';
+        }
+
+        // 构建错误提示HTML
+        errorContainer.innerHTML = `
+            <div class="error-header">
+                <span class="error-title">${errorTitle}</span>
+                <button class="error-close" title="关闭">&times;</button>
+            </div>
+            <div class="error-body">
+                <div class="error-message">${errorMessage}</div>
+                ${errorDetails ? `<div class="error-details">${errorDetails}</div>` : ''}
+                ${position !== null && sourceContent ? `
+                    <div class="error-position">
+                        出错位置: ${highlightErrorPosition(sourceContent, position)}
+                    </div>
+                ` : ''}
+            </div>
+        `;
+        
+        // 添加关闭按钮事件
+        errorContainer.querySelector('.error-close').onclick = () => {
+            errorContainer.style.display = 'none';
+        };
+        
+        errorContainer.style.display = 'block';
+    }
+
+    // 高亮错误位置
+    function highlightErrorPosition(content, position) {
+        const start = Math.max(0, position - 20);
+        const end = Math.min(content.length, position + 20);
+        const snippet = content.substring(start, end);
+        const positionInSnippet = position - start;
+        
+        return `...${snippet.substring(0, positionInSnippet)}<mark>${
+            snippet.charAt(positionInSnippet)
+        }</mark>${snippet.substring(positionInSnippet + 1)}...`;
+    }
+
+    // 修改渲染错误处理
+    function handleRenderError(error) {
+        console.error('渲染错误:', error);
+        showError(error, editorElement.value);
+    }
+
+    // 修改API错误事件处理
+    api.error.on(handleRenderError);
 
     // 修改编辑器内容变化处理
     let debounceTimer;
@@ -227,8 +300,12 @@ function initAlphaTexEditor() {
             if (isLoading) return;
             
             errorContainer.style.display = 'none';
-            await renderScore(editorElement.value);
-        }, 500); // 增加延迟到500ms
+            try {
+                await renderScore(editorElement.value);
+            } catch (error) {
+                handleRenderError(error);
+            }
+        }, 500);
     });
 
     // 按钮事件处理
@@ -256,7 +333,7 @@ function initAlphaTexEditor() {
                 showSuccess('保存成功');
             }
         } catch (e) {
-            showError('保存失败: ' + e.message);
+            showError(e.message, editorElement.value);
         }
     });
 
@@ -269,7 +346,7 @@ function initAlphaTexEditor() {
                 editorState.markSaved(id, editorElement.value);
                 showSuccess('另存为成功');
             } catch (e) {
-                showError('保存失败: ' + e.message);
+                showError(e.message, editorElement.value);
             }
         }
     });
@@ -322,27 +399,6 @@ function initAlphaTexEditor() {
     document.getElementById('btn-help').addEventListener('click', () => {
         window.location.href = 'docs.html'; // 直接跳转到 docs.html
     });
-    
-    // 显示错误信息的辅助函数
-    function showError(message) {
-        if(!errorContainer) return;
-        
-        // 添加关闭按钮的HTML
-        errorContainer.innerHTML = `
-            <div class="error-message">${message}</div>
-            <button class="error-close" title="关闭">&times;</button>
-        `;
-        
-        // 添加关闭按钮事件
-        const closeBtn = errorContainer.querySelector('.error-close');
-        if(closeBtn) {
-            closeBtn.onclick = () => {
-                errorContainer.style.display = 'none';
-            };
-        }
-        
-        errorContainer.style.display = 'block';
-    }
     
     // 显示成功信息的辅助函数
     function showSuccess(message) {
