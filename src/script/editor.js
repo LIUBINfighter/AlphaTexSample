@@ -137,19 +137,26 @@ function initAlphaTexEditor() {
     });
     
     document.getElementById('btn-save').addEventListener('click', () => {
-        // 实现保存功能
-        const content = editorElement.value;
-        const blob = new Blob([content], { type: 'text/plain' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'my-score.alphatab';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
+        const title = prompt('请输入曲谱标题:', '未命名曲谱');
+        if (title) {
+            // 保存到临时列表
+            window.scoreManager.saveScore(title, editorElement.value);
+            showError('曲谱已保存到列表');
+        }
     });
-    
+
+    // 监听曲谱加载事件
+    document.addEventListener('scoreLoad', (e) => {
+        const { score } = e.detail;
+        editorElement.value = score.content;
+        try {
+            api.tex(score.content);
+        } catch (error) {
+            console.error('加载曲谱失败:', error);
+            showError('加载曲谱失败: ' + error.message);
+        }
+    });
+
     document.getElementById('btn-examples').addEventListener('click', () => {
         // 提供几个示例
         const examples = {

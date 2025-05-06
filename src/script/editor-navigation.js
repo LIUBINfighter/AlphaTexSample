@@ -2,93 +2,114 @@
  * 编辑器专用的曲谱列表管理
  */
 
-// 编辑器曲谱数据存储
-const editorScores = [
-    { id: 'editor-simple', title: '简单示例', filename: 'simple.alphaTex' },
-    { id: 'editor-scales', title: '音阶练习', filename: 'scales.alphaTex' },
-    { id: 'editor-template', title: '新建模板', filename: 'template.alphaTex' }
-];
-
 // 本地存储键名
 const STORAGE_KEY = 'alphatab-editor-scores';
 
-/**
- * 初始化编辑器曲谱列表
- */
-function initScoreList() {
-    // 尝试从本地存储加载曲谱
-    const storedScores = localStorage.getItem(STORAGE_KEY);
-    const scoreList = storedScores ? JSON.parse(storedScores) : editorScores;
-    
-    // 渲染曲谱列表
-    renderScoreList(scoreList);
-
-    // 监听点击事件
-    document.querySelector('.score-items').addEventListener('click', (e) => {
-        if (e.target.classList.contains('score-item')) {
-            loadScore(e.target.dataset.id);
-        }
-    });
-}
-
-/**
- * 渲染曲谱列表
- */
-function renderScoreList(scores) {
-    const container = document.querySelector('.score-items');
-    container.innerHTML = '';
-    
-    scores.forEach(score => {
-        const item = document.createElement('li');
-        item.className = 'score-item';
-        item.dataset.id = score.id;
-        item.textContent = score.title;
-        container.appendChild(item);
-    });
-}
-
-/**
- * 加载指定ID的曲谱
- */
-function loadScore(id) {
-    // 这里会通过事件或其他机制与editor.js通信
-    // 通知编辑器加载特定的曲谱
-    const event = new CustomEvent('editorLoadScore', { detail: { id } });
-    document.dispatchEvent(event);
-}
-
-/**
- * 保存曲谱到本地列表
- */
-function saveScoreToList(id, title, content) {
-    // 尝试从本地存储加载曲谱
-    const storedScores = localStorage.getItem(STORAGE_KEY);
-    let scoreList = storedScores ? JSON.parse(storedScores) : editorScores;
-    
-    // 检查是否已存在该ID
-    const existingIndex = scoreList.findIndex(s => s.id === id);
-    
-    if (existingIndex >= 0) {
-        // 更新现有曲谱
-        scoreList[existingIndex].title = title;
-        scoreList[existingIndex].content = content;
-    } else {
-        // 添加新曲谱
-        scoreList.push({ id, title, content });
+// 编辑器曲谱管理类
+class ScoreManager {
+    constructor() {
+        this.scores = [];
+        this.loadFromStorage();
     }
-    
+
+    // 从本地存储加载曲谱
+    loadFromStorage() {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (stored) {
+            try {
+                this.scores = JSON.parse(stored);
+            } catch (e) {
+                console.error('加载曲谱失败:', e);
+                this.scores = [];
+            }
+        }
+    }
+
     // 保存到本地存储
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(scoreList));
-    
-    // 刷新列表显示
-    renderScoreList(scoreList);
+    saveToStorage() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(this.scores));
+    }
+
+    // 添加或更新曲谱
+    saveScore(title, content) {
+        const id = Date.now().toString();
+        const date = new Date().toLocaleString();
+        
+        this.scores.unshift({
+            id,
+            title,
+            content,
+            date
+        });
+
+        this.saveToStorage();
+        this.renderScoreList();
+        return id;
+    }
+
+    // 删除曲谱
+    deleteScore(id) {
+        this.scores = this.scores.filter(s => s.id !== id);
+        this.saveToStorage();
+        this.renderScoreList();
+    }
+
+    // 渲染曲谱列表
+    renderScoreList() {
+        const container = document.querySelector('.score-items');
+        if (!container) return;
+
+        container.innerHTML = '';
+        
+        this.scores.forEach(score => {
+            const li = document.createElement('li');
+            li.className = 'score-item';
+            li.innerHTML = `
+                <div class="score-item-header">
+                    <span class="score-title">${score.title}</span>
+                    <div class="score-actions">
+                        <button class="btn-delete" title="删除">×</button>
+                    </div>
+                </div>
+                <div class="score-date">${score.date}</div>
+            `;
+
+            // 点击加载曲谱
+            li.querySelector('.score-title').addEventListener('click', () => {
+                this.loadScore(score);
+                // 添加选中效果
+                document.querySelectorAll('.score-item').forEach(item => 
+                    item.classList.remove('active'));
+                li.classList.add('active');
+            });
+
+            // 删除按钮事件
+            li.querySelector('.btn-delete').addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (confirm('确定要删除这个曲谱吗？')) {
+                    this.deleteScore(score.id);
+                }
+            });
+
+            container.appendChild(li);
+        });
+    }
+
+    // 加载曲谱到编辑器
+    loadScore(score) {
+        // 触发自定义事件通知编辑器
+        const event = new CustomEvent('scoreLoad', { 
+            detail: { score } 
+        });
+        document.dispatchEvent(event);
+    }
 }
 
-// 初始化
-document.addEventListener('DOMContentLoaded', initScoreList);
+// 初始化和导出
+const scoreManager = new ScoreManager();
+document.addEventListener('DOMContentLoaded', () => {
+    scoreManager.renderScoreList();
+});
 
-// 导出公共方法供editor.js使用
-window.editorNavigation = {
-    saveScoreToList,
-    loadScore
-};
+// 导出供editor.js使用
+window.scoreManager = scoreManager;

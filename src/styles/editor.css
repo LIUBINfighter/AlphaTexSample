@@ -71,6 +71,66 @@
     z-index: 1000;
 }
 
+/* 曲谱列表项样式 */
+.score-item {
+    background: #fff;
+    border: 1px solid #ddd;
+    margin-bottom: 8px;
+    padding: 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.score-item:hover {
+    background: #f8f9fa;
+    border-color: #adb5bd;
+}
+
+.score-item.active {
+    background: #e7f5ff;
+    border-color: #339af0;
+}
+
+.score-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.score-title {
+    font-weight: 500;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.score-date {
+    font-size: 12px;
+    color: #6c757d;
+    margin-top: 4px;
+}
+
+.score-actions {
+    display: flex;
+    gap: 4px;
+}
+
+.btn-delete {
+    background: none;
+    border: none;
+    color: #dc3545;
+    font-size: 18px;
+    padding: 0 4px;
+    cursor: pointer;
+    opacity: 0.5;
+}
+
+.btn-delete:hover {
+    opacity: 1;
+}
+
 /* 响应式调整 */
 @media screen and (max-width: 768px) {
     .editor-container {
