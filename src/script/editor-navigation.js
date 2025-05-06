@@ -35,10 +35,13 @@ class ScoreManager {
         const id = Date.now().toString();
         const date = new Date().toLocaleString();
         
+        // 确保内容以换行符结尾
+        const formattedContent = content.trim() + '\n';
+        
         this.scores.unshift({
             id,
             title,
-            content,
+            content: formattedContent,
             date
         });
 
@@ -97,11 +100,26 @@ class ScoreManager {
 
     // 加载曲谱到编辑器
     loadScore(score) {
+        // 确保content存在且不为空
+        if (!score.content || score.content.trim() === '') {
+            console.error('曲谱内容为空');
+            return;
+        }
+
         // 触发自定义事件通知编辑器
         const event = new CustomEvent('scoreLoad', { 
             detail: { score } 
         });
         document.dispatchEvent(event);
+    }
+
+    // 添加验证方法
+    validateScore(content) {
+        if (!content || content.trim() === '') {
+            return false;
+        }
+        // 检查基本语法结构
+        return content.includes('\\title') && content.includes('.');
     }
 }
 

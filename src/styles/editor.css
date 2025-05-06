@@ -47,7 +47,7 @@
     margin-right: 5px;
 }
 
-/* 错误容器 */
+/* 错误容器样式更新 */
 .error-container {
     background-color: #fee;
     border: 1px solid #faa;
@@ -55,6 +55,29 @@
     padding: 10px;
     margin: 10px 0;
     display: none;
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.error-message {
+    flex: 1;
+    margin-right: 10px;
+}
+
+.error-close {
+    background: none;
+    border: none;
+    color: #a00;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 0 5px;
+    opacity: 0.6;
+}
+
+.error-close:hover {
+    opacity: 1;
 }
 
 /* 加载指示器 */

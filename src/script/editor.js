@@ -37,6 +37,20 @@ function initAlphaTexEditor() {
             scrollMode: alphaTab.ScrollMode.Continuous
         }
     });
+
+    // 添加用户交互初始化
+    function initAudioContext() {
+        if (api.playerReady) {
+            try {
+                api.playPause();
+                api.stop();
+                document.removeEventListener('click', initAudioContext);
+            } catch (e) {
+                console.error('初始化音频上下文失败:', e);
+            }
+        }
+    }
+    document.addEventListener('click', initAudioContext);
     
     // 设置默认AlphaTex内容
     const defaultAlphaTex = `\\title "我的乐谱"
@@ -148,9 +162,27 @@ function initAlphaTexEditor() {
     // 监听曲谱加载事件
     document.addEventListener('scoreLoad', (e) => {
         const { score } = e.detail;
-        editorElement.value = score.content;
+        if (!score || !score.content) {
+            showError('无效的曲谱内容');
+            return;
+        }
+
         try {
-            api.tex(score.content);
+            // 尝试预处理和验证内容
+            const content = score.content.trim() + '\n';
+            editorElement.value = content;
+            
+            // 使用 try-catch 包装 tex() 调用
+            try {
+                api.tex(content);
+            } catch (error) {
+                console.error('渲染曲谱失败:', error);
+                showError('渲染曲谱失败: ' + error.message);
+                
+                // 如果渲染失败，回退到一个简单的示例
+                editorElement.value = defaultAlphaTex;
+                api.tex(defaultAlphaTex);
+            }
         } catch (error) {
             console.error('加载曲谱失败:', error);
             showError('加载曲谱失败: ' + error.message);
@@ -204,13 +236,23 @@ function initAlphaTexEditor() {
     
     // 显示错误信息的辅助函数
     function showError(message) {
-        errorContainer.textContent = message;
-        errorContainer.style.display = 'block';
+        if(!errorContainer) return;
         
-        // 5秒后自动隐藏
-        setTimeout(() => {
-            errorContainer.style.display = 'none';
-        }, 5000);
+        // 添加关闭按钮的HTML
+        errorContainer.innerHTML = `
+            <div class="error-message">${message}</div>
+            <button class="error-close" title="关闭">&times;</button>
+        `;
+        
+        // 添加关闭按钮事件
+        const closeBtn = errorContainer.querySelector('.error-close');
+        if(closeBtn) {
+            closeBtn.onclick = () => {
+                errorContainer.style.display = 'none';
+            };
+        }
+        
+        errorContainer.style.display = 'block';
     }
 
     // 添加播放器控制逻辑
