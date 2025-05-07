@@ -1,5 +1,45 @@
 import * as alphaTab from 'https://cdn.jsdelivr.net/npm/@coderline/alphatab@latest/dist/alphaTab.min.mjs';
 
+// 编辑器状态管理类
+class EditorState {
+    constructor() {
+        this._isDirty = false;
+        this._currentScoreId = null;
+        this._lastSavedContent = '';
+    }
+
+    get isDirty() {
+        return this._isDirty;
+    }
+
+    markDirty() {
+        this._isDirty = true;
+    }
+
+    markSaved(id, content) {
+        this._currentScoreId = id;
+        this._lastSavedContent = content;
+        this._isDirty = false;
+    }
+
+    checkSafetyBefore(action) {
+        if (!this._isDirty) return true;
+        return confirm(`当前曲谱未保存，确定要${action}吗？`);
+    }
+
+    updateCurrentScore(id) {
+        this._currentScoreId = id;
+    }
+
+    getCurrentScoreId() {
+        return this._currentScoreId;
+    }
+
+    hasCurrentScore() {
+        return this._currentScoreId !== null;
+    }
+}
+
 // 等待DOM加载完成
 document.addEventListener('DOMContentLoaded', function() {
     initAlphaTexEditor();
@@ -9,6 +49,12 @@ document.addEventListener('DOMContentLoaded', function() {
  * 初始化AlphaTex编辑器
  */
 function initAlphaTexEditor() {
+    // 添加加载状态锁
+    let isLoading = false;
+
+    // 初始化状态管理器
+    const editorState = new EditorState();
+    
     // 获取DOM元素
     const editorElement = document.getElementById('alphatex-editor');
     const previewElement = document.getElementById('alphatex-preview');
@@ -37,13 +83,31 @@ function initAlphaTexEditor() {
             scrollMode: alphaTab.ScrollMode.Continuous
         }
     });
+
+    // 添加用户交互初始化
+    function initAudioContext() {
+        if (api.playerReady) {
+            try {
+                api.playPause();
+                api.stop();
+                document.removeEventListener('click', initAudioContext);
+            } catch (e) {
+                console.error('初始化音频上下文失败:', e);
+            }
+        }
+    }
+    document.addEventListener('click', initAudioContext);
     
     // 设置默认AlphaTex内容
-    const defaultAlphaTex = `\\title "我的乐谱"
-\\subtitle "AlphaTex示例"
-\\tempo 120
-\\time 4/4
-
+    const defaultAlphaTex = `\\title "歌曲标题"
+\\subtitle "副标题"  
+\\artist "艺术家"  
+\\album "专辑"  
+\\words "作词"  
+\\music "作曲"  
+\\copyright "版权信息"  
+\\tempo 120  
+\\instrument 25
 .
 4.4.4 0.2.4 1.3.4 |
 4.4.4 0.2.4 1.3.4 |`;
@@ -62,7 +126,7 @@ function initAlphaTexEditor() {
                 api.tex(texContent);
             } catch (e) {
                 console.error('初始渲染错误:', e);
-                showError('初始渲染错误: ' + e.message);
+                showError(e, texContent);
                 // 如果加载失败，则使用默认示例
                 editorElement.value = defaultAlphaTex;
                 api.tex(defaultAlphaTex);
@@ -70,7 +134,7 @@ function initAlphaTexEditor() {
         })
         .catch(error => {
             console.error('加载文件失败:', error);
-            showError('加载示例文件失败: ' + error.message);
+            showError(error, defaultAlphaTex);
             // 使用默认示例
             editorElement.value = defaultAlphaTex;
             api.tex(defaultAlphaTex);
@@ -78,79 +142,220 @@ function initAlphaTexEditor() {
     
     // 注册事件处理函数
     
-    // 渲染开始事件
+    // 修改渲染开始事件
     api.renderStarted.on((resized) => {
         console.log('渲染开始', resized);
         loadingIndicator.style.display = 'block';
+        isLoading = true;
     });
     
-    // 渲染完成事件
+    // 修改渲染完成事件
     api.renderFinished.on(() => {
         console.log('渲染完成');
         loadingIndicator.style.display = 'none';
+        isLoading = false;
     });
-    
-    // 错误处理事件
-    api.error.on((error) => {
-        console.error('渲染错误:', error);
-        
-        // 处理不同类型的错误
-        let errorMessage = '';
-        if (error instanceof alphaTab.importer.UnsupportedFormatError) {
-            // 处理格式错误
-            errorMessage = '不支持的格式: ' + error.message;
-        } else if (error.cause instanceof alphaTab.importer.AlphaTexImporter.AlphaTexError) {
-            // 处理AlphaTex语法错误
-            const alphaTexError = error.cause;
-            errorMessage = `语法错误: ${alphaTexError.message}, 位置: ${alphaTexError.position}`;
-        } else {
-            // 处理其他错误
-            errorMessage = '渲染错误: ' + error.message;
+
+    // 封装渲染函数
+    async function renderScore(content) {
+        if (isLoading) {
+            console.log('已有渲染任务正在进行，等待完成...');
+            return;
+        }
+
+        try {
+            await api.tex(content);
+            return true;
+        } catch (error) {
+            console.error('渲染失败:', error);
+            showError(error, content);
+            return false;
+        }
+    }
+
+    // 修改监听曲谱加载事件
+    document.addEventListener('scoreLoad', async (e) => {
+        if (isLoading) {
+            showError('请等待当前操作完成');
+            return;
+        }
+
+        if (!editorState.checkSafetyBefore('加载新曲谱')) {
+            return;
         }
         
-        showError(errorMessage);
+        const { score } = e.detail;
+        if (!score || !score.content) {
+            showError('无效的曲谱内容');
+            return;
+        }
+
+        try {
+            isLoading = true;
+            loadingIndicator.style.display = 'block';
+            
+            // 先更新编辑器内容
+            const content = score.content.trim() + '\n';
+            editorElement.value = content;
+            
+            // 等待渲染完成
+            const renderSuccess = await renderScore(content);
+            
+            // 更新状态
+            if (renderSuccess) {
+                editorState.markSaved(score.id, content);
+                editorState.updateCurrentScore(score.id);
+            } else {
+                showError('曲谱已加载，但渲染可能存在问题。建议检查格式。');
+            }
+        } catch (error) {
+            console.error('加载曲谱失败:', error);
+            showError(error, score.content);
+        } finally {
+            isLoading = false;
+            loadingIndicator.style.display = 'none';
+        }
     });
-    
-    // 监听编辑器内容变化
+
+    // 显示错误信息的辅助函数
+    function showError(error, sourceContent) {
+        if(!errorContainer) return;
+
+        let errorTitle = '错误';
+        let errorMessage = '';
+        let errorDetails = '';
+        let position = null;
+
+        // 解析不同类型的错误
+        if (typeof error === 'string') {
+            errorMessage = error;
+        } else if (error instanceof alphaTab.importer.UnsupportedFormatError) {
+            errorTitle = '格式错误';
+            if (error.cause instanceof alphaTab.importer.AlphaTexImporter.AlphaTexError) {
+                const alphaTexError = error.cause;
+                errorTitle = 'AlphaTex 语法错误';
+                errorMessage = `在第 ${alphaTexError.line} 行，第 ${alphaTexError.col} 列`;
+                errorDetails = `预期: ${alphaTexError.expected}\n实际: ${alphaTexError.symbol} "${alphaTexError.symbolData}"`;
+                position = alphaTexError.position;
+            } else {
+                errorMessage = error.message;
+            }
+        } else {
+            errorMessage = error.message || '未知错误';
+        }
+
+        // 构建错误提示HTML
+        errorContainer.innerHTML = `
+            <div class="error-header">
+                <span class="error-title">${errorTitle}</span>
+                <button class="error-close" title="关闭">&times;</button>
+            </div>
+            <div class="error-body">
+                <div class="error-message">${errorMessage}</div>
+                ${errorDetails ? `<div class="error-details">${errorDetails}</div>` : ''}
+                ${position !== null && sourceContent ? `
+                    <div class="error-position">
+                        出错位置: ${highlightErrorPosition(sourceContent, position)}
+                    </div>
+                ` : ''}
+            </div>
+        `;
+        
+        // 添加关闭按钮事件
+        errorContainer.querySelector('.error-close').onclick = () => {
+            errorContainer.style.display = 'none';
+        };
+        
+        errorContainer.style.display = 'block';
+    }
+
+    // 高亮错误位置
+    function highlightErrorPosition(content, position) {
+        const start = Math.max(0, position - 20);
+        const end = Math.min(content.length, position + 20);
+        const snippet = content.substring(start, end);
+        const positionInSnippet = position - start;
+        
+        return `...${snippet.substring(0, positionInSnippet)}<mark>${
+            snippet.charAt(positionInSnippet)
+        }</mark>${snippet.substring(positionInSnippet + 1)}...`;
+    }
+
+    // 修改渲染错误处理
+    function handleRenderError(error) {
+        console.error('渲染错误:', error);
+        showError(error, editorElement.value);
+    }
+
+    // 修改API错误事件处理
+    api.error.on(handleRenderError);
+
+    // 修改编辑器内容变化处理
     let debounceTimer;
     editorElement.addEventListener('input', function() {
-        // 使用防抖技术避免频繁渲染
+        editorState.markDirty();
+        
         clearTimeout(debounceTimer);
-        debounceTimer = setTimeout(() => {
-            errorContainer.style.display = 'none'; // 清除之前的错误
+        debounceTimer = setTimeout(async () => {
+            if (isLoading) return;
             
+            errorContainer.style.display = 'none';
             try {
-                api.tex(editorElement.value);
-            } catch (e) {
-                console.error('解析错误:', e);
-                showError('解析错误: ' + e.message);
+                await renderScore(editorElement.value);
+            } catch (error) {
+                handleRenderError(error);
             }
-        }, 300); // 300ms延迟
+        }, 500);
     });
-    
+
     // 按钮事件处理
     document.getElementById('btn-new').addEventListener('click', () => {
-        if (confirm('确定要创建新的乐谱吗？当前编辑内容将会丢失。')) {
+        if (editorState.checkSafetyBefore('创建新曲谱') &&
+            confirm('确定要创建新的乐谱吗？当前编辑内容将会丢失。')) {
             editorElement.value = defaultAlphaTex;
             api.tex(defaultAlphaTex);
         }
     });
     
+    // 保存按钮事件处理
     document.getElementById('btn-save').addEventListener('click', () => {
-        // 实现保存功能
-        const content = editorElement.value;
-        const blob = new Blob([content], { type: 'text/plain' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'my-score.alphatab';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
+        const currentId = editorState.getCurrentScoreId();
+        
+        try {
+            // 如果有当前曲谱ID就更新，没有就相当于另存为
+            if (currentId) {
+                window.scoreManager.updateScore(currentId, editorElement.value);
+                editorState.markSaved(currentId, editorElement.value);
+                showSuccess('保存成功');
+            } else {
+                const id = window.scoreManager.saveScore('未命名曲谱', editorElement.value);
+                editorState.markSaved(id, editorElement.value);
+                showSuccess('保存成功');
+            }
+        } catch (e) {
+            showError(e.message, editorElement.value);
+        }
     });
-    
+
+    // 另存为按钮事件处理（原保存逻辑移到这里）
+    document.getElementById('btn-save-as').addEventListener('click', () => {
+        const title = prompt('请输入曲谱标题:', '未命名曲谱');
+        if (title !== null) { // 用户没有取消
+            try {
+                const id = window.scoreManager.saveScore(title, editorElement.value);
+                editorState.markSaved(id, editorElement.value);
+                showSuccess('另存为成功');
+            } catch (e) {
+                showError(e.message, editorElement.value);
+            }
+        }
+    });
+
     document.getElementById('btn-examples').addEventListener('click', () => {
+        if (!editorState.checkSafetyBefore('加载示例')) {
+            return;
+        }
+        
         // 提供几个示例
         const examples = {
             '基本和弦': `\\title "基本和弦示例"
@@ -195,15 +400,21 @@ function initAlphaTexEditor() {
         window.location.href = 'docs.html'; // 直接跳转到 docs.html
     });
     
-    // 显示错误信息的辅助函数
-    function showError(message) {
-        errorContainer.textContent = message;
-        errorContainer.style.display = 'block';
+    // 显示成功信息的辅助函数
+    function showSuccess(message) {
+        if(!errorContainer) return;
         
-        // 5秒后自动隐藏
+        errorContainer.innerHTML = `
+            <div class="success-message">${message}</div>
+            <button class="error-close" title="关闭">&times;</button>
+        `;
+        errorContainer.style.display = 'block';
+        errorContainer.style.backgroundColor = '#d4edda';
+        
         setTimeout(() => {
             errorContainer.style.display = 'none';
-        }, 5000);
+            errorContainer.style.backgroundColor = '';
+        }, 2000);
     }
 
     // 添加播放器控制逻辑

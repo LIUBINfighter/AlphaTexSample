@@ -47,14 +47,75 @@
     margin-right: 5px;
 }
 
-/* 错误容器 */
+/* 错误提示容器 */
 .error-container {
-    background-color: #fee;
-    border: 1px solid #faa;
-    color: #a00;
-    padding: 10px;
-    margin: 10px 0;
+    background-color: #fff;
+    border: 1px solid #ffd7d7;
+    border-radius: 4px;
+    margin: 8px 0;
     display: none;
+}
+
+.error-header {
+    background-color: #fff5f5;
+    padding: 8px 12px;
+    border-bottom: 1px solid #ffd7d7;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.error-title {
+    color: #dc3545;
+    font-weight: 500;
+}
+
+.error-body {
+    padding: 12px;
+}
+
+.error-message {
+    color: #666;
+    margin-bottom: 8px;
+}
+
+.error-details {
+    font-family: monospace;
+    background-color: #f8f9fa;
+    padding: 8px;
+    border-radius: 4px;
+    white-space: pre-wrap;
+}
+
+.error-position {
+    color: #0066cc;
+    font-weight: 500;
+}
+
+.error-close {
+    background: none;
+    border: none;
+    color: #999;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 0 4px;
+}
+
+.error-close:hover {
+    color: #666;
+}
+
+/* 成功提示样式 */
+.success-container {
+    background-color: #d4edda;
+    border-color: #c3e6cb;
+    color: #155724;
+    padding: 12px;
+    border-radius: 4px;
+    margin: 8px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 /* 加载指示器 */
@@ -63,12 +124,98 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background: rgba(255, 255, 255, 0.8);
+    background: rgba(255, 255, 255, 0.9);
     padding: 20px;
     border-radius: 5px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    display: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     z-index: 1000;
+}
+
+/* 禁用状态样式 */
+.loading {
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+/* 曲谱列表项样式 */
+.score-item {
+    background: #fff;
+    border: 1px solid #ddd;
+    margin-bottom: 8px;
+    padding: 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.score-item:hover {
+    background: #f8f9fa;
+    border-color: #adb5bd;
+}
+
+.score-item.active {
+    background: #e7f5ff;
+    border-color: #339af0;
+}
+
+.score-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.score-title {
+    font-weight: 500;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.score-date {
+    font-size: 12px;
+    color: #6c757d;
+    margin-top: 4px;
+}
+
+.score-actions {
+    display: flex;
+    gap: 4px;
+}
+
+.btn-rename, .btn-delete {
+    background: none;
+    border: none;
+    color: #6c757d;
+    padding: 2px;
+    cursor: pointer;
+    opacity: 0.7;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-rename:hover {
+    opacity: 1;
+    color: #0066cc;
+    background-color: rgba(0, 102, 204, 0.1);
+}
+
+.btn-delete:hover {
+    opacity: 1;
+    color: #dc3545;
+    background-color: rgba(220, 53, 69, 0.1);
+}
+
+.btn-rename svg, .btn-delete svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* 模态框样式优化 */
+#scoreActionModal .modal-body input {
+    margin-top: 10px;
 }
 
 /* 响应式调整 */
