@@ -1,4 +1,4 @@
-import AlphaTabManager from './core/alpha-tab-manager.js';
+import * as alphaTab from 'https://cdn.jsdelivr.net/npm/@coderline/alphatab@latest/dist/alphaTab.min.mjs';
 import { loadSidebarScores } from './sidebar-loader.js';
 
 // 添加FOUC防护函数
@@ -103,16 +103,16 @@ function setupControl(selector) {
     }
 
     const viewPort = control.querySelector('.at-viewport');
-    // 使用AlphaTabManager获取共享实例
-    const at = AlphaTabManager.getInstance().initialize(el, {
+    const at = new alphaTab.AlphaTabApi(el, {
+        // file: 'https://www.alphatab.net/files/canon.gp',
         file: 'assets/scores/吉他与孤独与蓝色星球.gpx',
         player: {
             enablePlayer: true,
             soundFont: 'https://cdn.jsdelivr.net/npm/@coderline/alphatab@alpha/dist/soundfont/sonivox.sf2',
             scrollElement: viewPort,
             scrollOffsetX: -10,
-            scrollMode: alphaTab.ScrollMode.Continuous,
-            scrollSpeed: 300
+            scrollMode: alphaTab.ScrollMode.Continuous, // 明确设置滚动模式
+            scrollSpeed: 300 // 控制滚动速度
         }
     });
 

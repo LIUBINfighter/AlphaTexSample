@@ -1,5 +1,4 @@
-import AlphaTabManager from './core/alpha-tab-manager.js';
-import eventBus from './core/event-bus.js';
+import * as alphaTab from 'https://cdn.jsdelivr.net/npm/@coderline/alphatab@latest/dist/alphaTab.min.mjs';
 
 // 编辑器状态管理类
 class EditorState {
@@ -71,8 +70,20 @@ function initAlphaTexEditor() {
     console.log('初始化AlphaTex编辑器...');
     
     // 初始化AlphaTab API
-    const api = AlphaTabManager.getInstance().initialize(previewElement);
-    
+    const api = new alphaTab.AlphaTabApi(previewElement, {
+        display: {
+            scale: 1.2,
+            staveProfile: alphaTab.StaveProfile.ScoreTab, // 显示五线谱和六线谱
+            layoutMode: alphaTab.LayoutMode.Page // 使用分页布局
+        },
+        player: {
+            enablePlayer: true,
+            soundFont: 'https://cdn.jsdelivr.net/npm/@coderline/alphatab@alpha/dist/soundfont/sonivox.sf2',
+            scrollElement: document.querySelector('.at-viewport'),
+            scrollMode: alphaTab.ScrollMode.Continuous
+        }
+    });
+
     // 添加用户交互初始化
     function initAudioContext() {
         if (api.playerReady) {
@@ -163,7 +174,7 @@ function initAlphaTexEditor() {
     }
 
     // 修改监听曲谱加载事件
-    eventBus.on('scoreLoad', async (score) => {
+    document.addEventListener('scoreLoad', async (e) => {
         if (isLoading) {
             showError('请等待当前操作完成');
             return;
@@ -173,6 +184,7 @@ function initAlphaTexEditor() {
             return;
         }
         
+        const { score } = e.detail;
         if (!score || !score.content) {
             showError('无效的曲谱内容');
             return;
@@ -488,10 +500,55 @@ function initAlphaTexEditor() {
     document.querySelectorAll('.at-speed-options a').forEach((a) => {
         a.onclick = (e) => {
             e.preventDefault();
-            const speed = parseFloat(a.getAttribute('data-speed'));
-            if (!isNaN(speed)) {
-                api.playbackSpeed = speed;
-            }
+            const speed = parseFloat(e.target.textContent);
+            api.playbackSpeed = speed;
+            document.querySelector('.at-speed-label').textContent = e.target.textContent;
         };
     });
+
+    // 添加缩放功能实现
+    document.querySelectorAll('.at-zoom-options .dropdown-item').forEach((item) => {
+        item.onclick = (e) => {
+            e.preventDefault();
+            // 解析缩放百分比
+            const scale = parseInt(e.target.textContent) / 100;
+            // 更新缩放设置
+            api.settings.display.scale = scale;
+            // 更新显示的缩放比例文本
+            document.querySelector('.at-zoom-label').textContent = e.target.textContent;
+            // 应用更改并重新渲染
+            api.updateSettings();
+            api.render();
+        };
+    });
+
+    // 在初始化时设置默认缩放比例
+    api.settings.display.scale = 1.0;
+    document.querySelector('.at-zoom-label').textContent = '100%';
+    
+    // 监听窗口大小变化，自动调整缩放（可选）
+    window.addEventListener('resize', () => {
+        // 使用防抖处理resize事件
+        clearTimeout(window.resizeTimer);
+        window.resizeTimer = setTimeout(() => {
+            const width = window.innerWidth;
+            let scale = 1.0;
+            
+            // 根据窗口宽度调整缩放
+            if (width > 1300) {
+                scale = 1.2;
+            } else if (width > 800) {
+                scale = 1.0;
+            } else {
+                scale = 0.8;
+            }
+            
+            api.settings.display.scale = scale;
+            document.querySelector('.at-zoom-label').textContent = `${scale * 100}%`;
+            api.updateSettings();
+            api.render();
+        }, 250);
+    });
+
+    console.log('AlphaTex编辑器初始化完成');
 }
