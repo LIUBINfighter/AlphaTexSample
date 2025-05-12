@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="src/styles/control.css" /> <!-- 确保路径正确 -->
     <link rel="stylesheet" href="src/styles/sidebar.css" /> <!-- 确保路径正确 -->
     <link rel="stylesheet" href="src/styles/editor.css" /> <!-- 确保路径正确 -->
+    <link rel="stylesheet" href="src/styles/theme.css" />
     
     <!-- 添加 favicon -->
     <link rel="icon" href="../assets/favicon/favicon.ico" sizes="any">
@@ -64,6 +65,7 @@
 <body>
     <div class="app-container">
         <div class="app-sidebar">
+            <button id="theme-toggle" class="app-button" style="display: block; margin-bottom: 10px;">🌙 暗黑模式</button>
             <a href="editor.html" class="app-button" style="display: block; margin-bottom: 10px;">AlphaTex编辑器</a> <!-- 将按钮直接链接到 editor.html -->
             <a href="docs.html" class="app-button" style="display: block; margin-bottom: 10px;">文档</a> <!-- 将按钮直接链接到 docs.html -->
             <div class="score-list">
@@ -244,6 +246,7 @@
             // 不再需要设置app-container的visibility，因为通过body的opacity控制整体可见性
         });
     </script>
+    <script src="src/script/theme.js"></script>
 </body>
 
 </html>
